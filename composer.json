@@ -1,10 +1,12 @@
 {
-    "name": "laravel/laravel",
+    "name": "thebachtiarz/laralock",
     "type": "project",
-    "description": "The Laravel Framework.",
+    "description": "Laravel 7 Airlock Production.",
     "keywords": [
         "framework",
-        "laravel"
+        "laravel",
+        "thebachtiarz",
+        "laralock"
     ],
     "license": "MIT",
     "require": {
@@ -39,6 +41,13 @@
         "classmap": [
             "database/seeds",
             "database/factories"
+        ],
+        "files":[
+            "app/Helpers/Apps/AppsHandler.php",
+            "app/Helpers/Apps/CarbonTimeHandler.php",
+            "app/Helpers/Apps/ResponseHandler.php",
+            "app/Helpers/Apps/SeederHandler.php",
+            "app/Helpers/Auth/UserHandler.php"
         ]
     },
     "autoload-dev": {
