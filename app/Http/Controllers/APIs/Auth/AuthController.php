@@ -31,8 +31,18 @@ class AuthController extends Controller
             return response()->json(errorResponse('Account not found !'), 202);
         }
         if (Auth::user()->active == User_setActiveStatus('active')) {
-            return Auth::user()->createToken('_jwtApiToken')->plainTextToken;
+            return $this->respondWithToken(Auth::user()->createToken('_jwtApiToken')->plainTextToken);
         }
         return response()->json(errorResponse('Your account has been ' . User_getActiveStatus(Auth::user()->active)), 202);
+    }
+
+    protected function respondWithToken($token)
+    {
+        return response()->json(dataResponse([
+            'account_name' => Auth::user()->userBio->name,
+            'status' => User_getStatusForHuman(Auth::user()->userstat->status),
+            'access_token' => $token,
+            'token_type' => 'bearer'
+        ], '', 'Authorization'));
     }
 }

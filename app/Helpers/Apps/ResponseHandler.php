@@ -66,12 +66,12 @@ function customResponse($stat, $msg, ...$response_data)
  * @param string $time
  * @return void
  */
-function dataResponse($response_data, $stat = 'success', $msg = '', $time = '')
+function dataResponse($response_data, $stat = '', $msg = '', $time = '')
 {
     return [
-        'status' => $stat,
+        'status' => $stat ? $stat : 'success',
         'access' => $time ? $time : Carbon_HumanFullDateTimeNow(),
-        'message' => $msg,
+        'message' => $msg ? $msg : '',
         'response_data' => $response_data
     ];
 }

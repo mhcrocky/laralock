@@ -41,11 +41,11 @@ class User extends Authenticatable
     # pivot
     public function userbio()
     {
-        return $this->hasOne('App\Models\Auth\UserBiodata');
+        return $this->hasOne('App\Models\Auth\UserBiodata', 'code', 'code');
     }
 
     public function userstat()
     {
-        return $this->hasOne('App\Models\Auth\UserStatus');
+        return $this->hasOne('App\Models\Auth\UserStatus', 'code', 'code');
     }
 }
