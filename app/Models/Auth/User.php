@@ -4,11 +4,12 @@ namespace App\Models\Auth;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Airlock\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use HasApiTokens, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -16,7 +17,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'email', 'password', 'code', 'active'
     ];
 
     /**
@@ -36,4 +37,15 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    # pivot
+    public function userbio()
+    {
+        return $this->hasOne('App\Models\Auth\UserBiodata');
+    }
+
+    public function userstat()
+    {
+        return $this->hasOne('App\Models\Auth\UserStatus');
+    }
 }
