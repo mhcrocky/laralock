@@ -24,3 +24,11 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function () {
     Route::post('/usercard', 'APIs\Auth\AuthController@usercard');
     Route::post('/register', 'APIs\Auth\AuthController@register');
 });
+
+
+/**
+ * testing token user
+ */
+Route::group(['middleware' => 'auth:airlock', 'prefix' => 'user'], function () {
+    Route::resource('/me', 'APIs\UserTestController')->except(['create', 'edit']);
+});
