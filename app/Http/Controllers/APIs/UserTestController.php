@@ -20,7 +20,7 @@ class UserTestController extends Controller
      */
     public function index()
     {
-        return response()->json(dataResponse(Auth::user()), 200);
+        return response()->json(dataResponse(['name' => Auth::user()->userBio->name]), 200);
     }
 
     /**
