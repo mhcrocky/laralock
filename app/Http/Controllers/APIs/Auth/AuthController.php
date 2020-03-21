@@ -4,8 +4,6 @@ namespace App\Http\Controllers\APIs\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Hash;
 use App\Models\Auth\AccessVerifyUser;
 # Models
 use App\Models\Auth\User;
@@ -19,7 +17,8 @@ class AuthController extends Controller
 
     public function login()
     {
-        $validator = Validator::make(request()->all(), [
+        // ! Auth login benerin lagi untuk email verifikasi masih gagal
+        $validator = Validator(request()->all(), [
             'email' => 'required|string|email',
             'password' => 'required|string',
             'device' => 'nullable|string|alpha_num'

@@ -41,6 +41,16 @@ function apps_icon()
 }
 
 /**
+ * default user image
+ *
+ * @return void
+ */
+function default_user_image()
+{
+    return '/files/image/profile/default.jpg';
+}
+
+/**
  * create allowed url for user
  *
  * @param array $data

@@ -22,13 +22,13 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function () {
     Route::post('/logout', 'APIs\Auth\AuthController@logout');
     Route::post('/refresh', 'APIs\Auth\AuthController@refresh');
     Route::post('/usercard', 'APIs\Auth\AuthController@usercard');
-    Route::post('/register', 'APIs\Auth\AuthController@register');
+    Route::post('/register', 'APIs\Auth\RegisterController@register');
 });
 
 
 /**
  * testing token user
  */
-Route::group(['middleware' => 'auth:airlock', 'prefix' => 'user'], function () {
+Route::group(['middleware' => ['auth:airlock', 'verified'], 'prefix' => 'user'], function () {
     Route::resource('/me', 'APIs\UserTestController')->except(['create', 'edit']);
 });
