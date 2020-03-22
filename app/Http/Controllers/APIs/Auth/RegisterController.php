@@ -18,9 +18,9 @@ class RegisterController extends Controller
             'email' => 'required|string|email|unique:users,email',
             'password' => 'required|string'
         ], [
-            'name.regex' => 'Format Name is wrong.',
-            'email.email' => 'Format Email is wrong.',
-            'email.unique' => 'Member has already been registered.'
+            'name.regex' => 'Format Name is wrong',
+            'email.email' => 'Format Email is wrong',
+            'email.unique' => 'Member has already been registered'
         ]);
         if ($validator->fails()) {
             return response()->json(errorResponse($validator->errors()), 202);
@@ -30,7 +30,7 @@ class RegisterController extends Controller
             DB::transaction(function () {
                 $newCode = User_createNewCode();
                 DB::table('users')->insert([
-                    'email' => request('email'), 'password' => Hash::make(request('password')), 'code' => $newCode, 'active' => User_setActiveStatus('active')
+                    'email' => request('email'), 'password' => Hash::make(request('password')), 'code' => $newCode, 'active' => User_setActiveStatus('block')
                 ]);
                 DB::table('user_biodatas')->insert([
                     'code' => $newCode, 'name' => request('name'), 'profile_img' => default_user_image()

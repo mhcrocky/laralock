@@ -17,7 +17,6 @@ class AuthController extends Controller
 
     public function login()
     {
-        // ! Auth login benerin lagi untuk email verifikasi masih gagal
         $validator = Validator(request()->all(), [
             'email' => 'required|string|email',
             'password' => 'required|string',
@@ -27,13 +26,17 @@ class AuthController extends Controller
             return response()->json(errorResponse($validator->errors()), 202);
         }
         $credentials = request(['email', 'password']);
-        if (!$token = Auth::attempt($credentials)) {
+        $token = Auth::attempt($credentials);
+        if (!$token) {
             return response()->json(errorResponse('Account not found !'), 202);
         }
-        if (Auth::user()->active == User_setActiveStatus('active')) {
-            return $this->respondWithToken(Auth::user()->createToken(request('device') ? (request('device') . "-" . getClientIpAddress()) : ("_jwtApiToken-" . getClientIpAddress()))->plainTextToken);
+        if (Auth::user()->email_verified_at) {
+            if (Auth::user()->active == User_setActiveStatus('active')) {
+                return $this->respondWithToken(Auth::user()->createToken(request('device') ? (request('device') . "-" . getClientIpAddress()) : ("_jwtApiToken-" . getClientIpAddress()))->plainTextToken);
+            }
+            return response()->json(errorResponse('Your account has been ' . User_getActiveStatus(Auth::user()->active)), 202);
         }
-        return response()->json(errorResponse('Your account has been ' . User_getActiveStatus(Auth::user()->active)), 202);
+        return response()->json(errorResponse('You must verify your email account'), 202);
     }
 
     public function logout()
