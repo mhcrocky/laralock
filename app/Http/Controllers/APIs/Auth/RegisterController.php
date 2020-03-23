@@ -11,6 +11,11 @@ use App\Models\Auth\UserStatus; // ! ['code', 'status']
 
 class RegisterController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum', ['except' => ['register', 'register_verify']]);
+    }
+
     public function register()
     {
         $validator = Validator(request()->all(), [

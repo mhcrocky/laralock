@@ -29,6 +29,6 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function () {
 /**
  * testing token user
  */
-Route::group(['middleware' => ['auth:airlock', 'verified'], 'prefix' => 'user'], function () {
+Route::group(['middleware' => ['auth:sanctum', 'verified'], 'prefix' => 'user'], function () {
     Route::resource('/me', 'APIs\UserTestController')->except(['create', 'edit']);
 });
