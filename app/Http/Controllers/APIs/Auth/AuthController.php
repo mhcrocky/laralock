@@ -36,7 +36,7 @@ class AuthController extends Controller
             }
             return response()->json(errorResponse('Your account has been ' . User_getActiveStatus(Auth::user()->active)), 202);
         }
-        return response()->json(errorResponse('You must verify your email account'), 202);
+        return response()->json(errorResponse('Please verify your account first'), 202);
     }
 
     public function logout()
