@@ -18,7 +18,9 @@ class RegisterController extends Controller
             'email' => 'required|string|email|unique:users,email',
             'password' => 'required|string'
         ], [
+            'name.required' => 'Name cannot be empty',
             'name.regex' => 'Format Name is wrong',
+            'email.required' => 'Email cannot be empty',
             'email.email' => 'Format Email is wrong',
             'email.unique' => 'Member has already been registered'
         ]);
@@ -33,7 +35,7 @@ class RegisterController extends Controller
                     'email' => request('email'), 'password' => Hash::make(request('password')), 'code' => $newCode, 'active' => User_setActiveStatus('block')
                 ]);
                 DB::table('user_biodatas')->insert([
-                    'code' => $newCode, 'name' => request('name'), 'profile_img' => default_user_image()
+                    'code' => $newCode, 'name' => ucwords(request('name')), 'profile_img' => default_user_image()
                 ]);
                 DB::table('user_statuses')->insert([
                     'code' => $newCode, 'status' => User_setStatus('user')
