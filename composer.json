@@ -2,7 +2,7 @@
     "name": "thebachtiarz/laralock",
     "type": "project",
     "description": "Laravel 7 Airlock Production.",
-    "version": "1.0.0",
+    "version": "v1.0.1",
     "keywords": [
         "framework",
         "laravel",
