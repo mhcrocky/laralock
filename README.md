@@ -1,7 +1,5 @@
 # Laravel Sanctum
 
----
-
 ## About Project
 
 ###### Fresh Laravel 7 with several features :
@@ -38,9 +36,7 @@ composer install ;
 php artisan migrate ;
 ```
 
-~~~ **Happy Coding :)** ~~~
-
----
+**~~~** **Happy Coding :)** **~~~**
 
 ##### Regards :
 
