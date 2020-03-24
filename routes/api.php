@@ -25,10 +25,15 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function () {
     Route::post('/register', 'APIs\Auth\RegisterController@register');
 });
 
-
 /**
  * testing token user
  */
 Route::group(['middleware' => ['auth:sanctum', 'verified'], 'prefix' => 'user'], function () {
     Route::resource('/me', 'APIs\UserTestController')->except(['create', 'edit']);
 });
+
+
+/**
+ * ! issue line 20
+ * @ Need to create a middleware which only accepts from trusted front-end
+ */
