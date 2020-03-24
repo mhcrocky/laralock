@@ -40,6 +40,4 @@ php artisan migrate ;
 
 ##### Regards :
 
-Project Name : thebachtiarz/laralock
-Description : Laravel 7 Sanctum Production.
-Created By : [TheBachtiarz](https://github.com/thebachtiarz/)
+[TheBachtiarz](https://github.com/thebachtiarz/)
