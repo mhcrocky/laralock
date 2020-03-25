@@ -12,7 +12,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:sanctum', ['except' => ['login', 'register', 'register_verify', 'lost_password', 'lost_password_verify', 'password_renew']]);
+        $this->middleware(['auth:sanctum', 'verified'], ['except' => ['login', 'register', 'register_verify', 'lost_password', 'lost_password_verify', 'password_renew']]);
     }
 
     public function login()
@@ -37,6 +37,11 @@ class AuthController extends Controller
             return response()->json(errorResponse('Your account has been ' . User_getActiveStatus(Auth::user()->active)), 202);
         }
         return response()->json(errorResponse('Please verify your account first'), 202);
+    }
+
+    public function credential()
+    {
+        return response()->json(dataResponse(['name' => Auth::user()->userBio->name]), 200);
     }
 
     public function logout()

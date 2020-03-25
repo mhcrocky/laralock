@@ -23,6 +23,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function () {
     Route::post('/refresh', 'APIs\Auth\AuthController@refresh');
     Route::post('/usercard', 'APIs\Auth\AuthController@usercard');
     Route::post('/register', 'APIs\Auth\RegisterController@register');
+
+    Route::get('/creds', 'APIs\Auth\AuthController@credential');
 });
 
 /**
