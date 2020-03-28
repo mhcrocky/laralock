@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\Auth\User; // ! ['email', 'password', 'code', 'active']
 use App\Models\Auth\UserBiodata; // ! ['code', 'name', 'profile_img']
 use App\Models\Auth\UserStatus; // ! ['code', 'status']
+use App\Models\Access\RegisterMember; // ! ['user_access', 'user_code']
 
 class RegisterController extends Controller
 {
