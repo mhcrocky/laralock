@@ -40,7 +40,7 @@ function Mail_createNewAccessToken()
 function Mail_sendRegisterVerification($mailto, $usercode)
 {
     $access_key = Mail_createNewAccessToken();
-    $url = env('SANCTUM_STATEFUL_DOMAINS') . "/register/verify?_access={$access_key}";
+    $url = env('SANCTUM_STATEFUL_DOMAINS') . "/register/verify/{$access_key}";
     RegisterMember::create(['user_access' => $access_key, 'user_code' => $usercode]);
     Mail::to($mailto)->send((new RegisterMail)->markdown('emails.access.registermail', ['url' => $url]));
 }
