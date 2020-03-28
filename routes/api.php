@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
  * jwt auth default route
  * access : /api/auth/---
  */
-Route::group(['middleware' => 'api', 'prefix' => 'auth'], function () {
+Route::group([/*'middleware' => 'api', */'prefix' => 'auth'], function () {
     Route::post('/login', 'APIs\Auth\AuthController@login');
     Route::post('/logout', 'APIs\Auth\AuthController@logout');
     Route::post('/refresh', 'APIs\Auth\AuthController@refresh');
@@ -25,6 +25,10 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function () {
     Route::post('/register', 'APIs\Auth\RegisterController@register');
 
     Route::get('/creds', 'APIs\Auth\AuthController@credential');
+});
+
+Route::group([/*'middleware' => 'api', */'prefix' => 'access'], function () {
+    Route::get('/register/verify', 'APIs\Auth\RegisterController@register_verify');
 });
 
 /**

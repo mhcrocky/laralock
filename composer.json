@@ -47,6 +47,7 @@
         "files":[
             "app/Helpers/Apps/AppsHandler.php",
             "app/Helpers/Apps/CarbonTimeHandler.php",
+            "app/Helpers/Apps/MailHandler.php",
             "app/Helpers/Apps/ResponseHandler.php",
             "app/Helpers/Apps/SeederHandler.php",
             "app/Helpers/Auth/UserHandler.php"
