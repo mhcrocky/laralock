@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\Mail;
  * mail class
  */
 
+use App\Mail\Access\RecoverPasswordMail;
 use App\Mail\Access\RegisterMail;
 
 /**
  * use models
  */
 
+use App\Models\Access\ForgetPassword; // ! ['user_access', 'user_email']
 use App\Models\Access\RegisterMember; // ! ['user_access', 'user_code']
 
 /** */
@@ -40,20 +42,21 @@ function Mail_createNewAccessToken()
 function Mail_sendRegisterVerification($mailto, $usercode)
 {
     $access_key = Mail_createNewAccessToken();
-    $url = env('SANCTUM_STATEFUL_DOMAINS') . "/register/verify/{$access_key}";
+    $url = env('SANCTUM_STATEFUL_DOMAINS') . "#/register/verify/{$access_key}";
     RegisterMember::create(['user_access' => $access_key, 'user_code' => $usercode]);
     Mail::to($mailto)->send((new RegisterMail)->markdown('emails.access.registermail', ['url' => $url]));
 }
 
 /**
- * send email for access user change password
+ * send email for access recover password
  *
  * @param string $mailto
- * @param string $access_key
  * @return void
  */
-function sendAccessLostPassword($mailto, $access_key)
+function sendAccessLostPassword($mailto)
 {
-    $url = url("/api/access/signin/lost/verify?_access={$access_key}");
-    Mail::to($mailto)->send((new LostPasswordMail)->markdown('emails.register.lostpassword', ['url' => $url]));
+    $access_key = Mail_createNewAccessToken();
+    $url = env('SANCTUM_STATEFUL_DOMAINS') . "#/lost-password/recover/{$access_key}";
+    ForgetPassword::create(['user_access' => $access_key, 'user_email' => $mailto]);
+    Mail::to($mailto)->send((new RecoverPasswordMail)->markdown('emails.access.recoverpasswordmail', ['url' => $url]));
 }

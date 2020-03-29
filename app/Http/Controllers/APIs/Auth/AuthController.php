@@ -52,6 +52,25 @@ class AuthController extends Controller
         return response()->json(errorResponse('Failed to Logout'), 202);
     }
 
+    public function lost_password()
+    {
+        $validator = Validator(request()->all(), [
+            'email' => 'required|string|email'
+        ], [
+            'email.required' => 'Email cannot be empty',
+            'email.email' => 'Format Email is wrong',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(errorResponse($validator->errors()), 202);
+        }
+        $getAccount = User::where('email', request('email'))->first();
+        if ($getAccount) {
+            sendAccessLostPassword(request('email'));
+            return response()->json(successResponse('Request has been sent, please check your email!'), 200);
+        }
+        return response()->json(errorResponse('Account not found!'), 202);
+    }
+
     protected function respondWithToken($token)
     {
         return response()->json(dataResponse([
