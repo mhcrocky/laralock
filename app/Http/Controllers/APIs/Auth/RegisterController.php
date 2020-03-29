@@ -66,9 +66,16 @@ class RegisterController extends Controller
         }
         $getAccess = RegisterMember::where('user_access', request('_access'))->first();
         if ($getAccess) {
-            User::where('code', $getAccess['user_code'])->update(['email_verified_at' => Carbon_DBtimeNow(), 'active' => User_setActiveStatus('active')]);
-            RegisterMember::where('user_access', request('_access'))->delete();
-            return response()->json(successResponse('Account successfully verified'), 201);
+            DB::beginTransaction();
+            try {
+                DB::table('users')->where('code', $getAccess['user_code'])->update(['email_verified_at' => Carbon_DBtimeNow(), 'active' => User_setActiveStatus('active')]);
+                DB::table('register_members')->where('user_access', request('_access'))->delete();
+                DB::commit();
+                return response()->json(successResponse('Account successfully verified'), 201);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(errorResponse('Failed to verified your account'), 202);
+            }
         }
         return response()->json(errorResponse('Sorry, we cannot verify this request'), 202);
     }

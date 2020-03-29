@@ -4,6 +4,8 @@ namespace App\Http\Controllers\APIs\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 # Models
 use App\Models\Auth\User;
 use App\Models\Access\ForgetPassword; // ! ['user_access', 'user_email']
@@ -12,7 +14,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth:sanctum', 'verified'], ['except' => ['login', 'register', 'register_verify', 'lost_password', 'lost_password_verify', 'password_renew']]);
+        $this->middleware(['auth:sanctum', 'verified'], ['except' => ['login', 'register', 'register_verify', 'lost_password', 'lost_password_access', 'lost_password_recover']]);
     }
 
     public function login()
@@ -69,6 +71,50 @@ class AuthController extends Controller
             return response()->json(successResponse('Request has been sent, please check your email!'), 200);
         }
         return response()->json(errorResponse('Account not found!'), 202);
+    }
+
+    public function lost_password_access()
+    {
+        $validator = Validator(request()->all(), [
+            '_access' => 'required|string|alpha_num'
+        ], [
+            '_access.*' => 'Sorry, we cannot verify this request'
+        ]);
+        if ($validator->fails()) {
+            return response()->json(errorResponse($validator->errors()), 202);
+        }
+        $getAccess = ForgetPassword::where('user_access', request('_access'))->first();
+        if ($getAccess) {
+            return response()->json(successResponse('Please recover your password now'), 200);
+        }
+        return response()->json(errorResponse('Sorry, we cannot verify this request'), 202);
+    }
+
+    public function lost_password_recover()
+    {
+        $validator = Validator(request()->all(), [
+            'password' => 'required|string',
+            '_access' => 'required|string|alpha_num'
+        ], [
+            '_access.*' => 'Sorry, we cannot verify this request'
+        ]);
+        if ($validator->fails()) {
+            return response()->json(errorResponse($validator->errors()), 202);
+        }
+        $getAccess = ForgetPassword::where('user_access', request('_access'))->first();
+        if ($getAccess) {
+            DB::beginTransaction();
+            try {
+                DB::table('users')->where('email', $getAccess['user_email'])->update(['password' => Hash::make(request('password'))]);
+                DB::table('forget_passwords')->where('user_email', $getAccess['user_email'])->delete();
+                DB::commit();
+                return response()->json(successResponse('Password updated successfully'), 201);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(errorResponse('Failed to update new password'), 202);
+            }
+        }
+        return response()->json(errorResponse('Sorry, we cannot verify this request'), 202);
     }
 
     protected function respondWithToken($token)

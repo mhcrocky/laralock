@@ -25,12 +25,19 @@ Route::group([/*'middleware' => 'api', */'prefix' => 'auth'], function () {
     Route::post('/register', 'APIs\Auth\RegisterController@register');
 
     Route::post('/lost-password', 'APIs\Auth\AuthController@lost_password');
+    Route::post('/lost-password/access', 'APIs\Auth\AuthController@lost_password_access');
+    Route::post('/lost-password/recover', 'APIs\Auth\AuthController@lost_password_recover');
 
     Route::get('/creds', 'APIs\Auth\AuthController@credential');
 });
 
+/**
+ * access rest
+ * for verify and recover password
+ * access : /api/access/---
+ */
 Route::group([/*'middleware' => 'api', */'prefix' => 'access'], function () {
-    Route::get('/register/verify', 'APIs\Auth\RegisterController@register_verify');
+    Route::post('/register/verify', 'APIs\Auth\RegisterController@register_verify');
 });
 
 /**
