@@ -43,7 +43,7 @@ class AuthController extends Controller
 
     public function credential()
     {
-        return response()->json(dataResponse(['name' => Auth::user()->userBio->name]), 200);
+        return response()->json(dataResponse(['name' => Auth::user()->userbio->name]), 200);
     }
 
     public function logout()
@@ -120,7 +120,7 @@ class AuthController extends Controller
     protected function respondWithToken($token)
     {
         return response()->json(dataResponse([
-            'account_name' => Auth::user()->userBio->name,
+            'account_name' => Auth::user()->userbio->name,
             'status' => User_getStatusForHuman(Auth::user()->userstat->status),
             'access_token' => $token,
             'token_type' => 'bearer'

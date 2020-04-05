@@ -38,6 +38,17 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
     ];
 
+    # map
+    public function userProfileMap()
+    {
+        return [
+            'name' => $this->userBio->name,
+            'profile_img' => $this->userBio->profile_img,
+            'status' => User_getStatusForHuman($this->userstat->status),
+            'email' => $this->email
+        ];
+    }
+
     # pivot
     public function userbio()
     {
