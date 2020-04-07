@@ -41,7 +41,9 @@ Route::group([/*'middleware' => 'api', */'prefix' => 'access'], function () {
 });
 
 /**
- * testing token user
+ * user access resources
+ * used to retrieve data from user
+ * access : /api/user/---
  */
 Route::group(['middleware' => ['auth:sanctum', 'verified'], 'prefix' => 'user'], function () {
     Route::resource('/me', 'APIs\UserTestController')->except(['create', 'edit']); // testing purpose

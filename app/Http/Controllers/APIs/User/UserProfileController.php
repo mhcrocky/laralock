@@ -36,7 +36,22 @@ class UserProfileController extends Controller
      */
     public function store()
     {
-        //
+        if (request()->has('_upload')) {
+            if (request('_upload') == 'image') {
+                $validator = Validator(request()->all(), [
+                    '_image' => 'required|image|mimes:jpeg,png,jpg|max:2048'
+                ], [
+                    '_image.*' => 'Image not support.'
+                ]);
+                if ($validator->fails()) {
+                    return response()->json(errorResponse($validator->errors()), 202);
+                }
+                $image = request()->file('_image');
+                $name = 'USR-' . randString(25) . '.' . $image->getClientOriginalExtension();
+                $image->move('files/image/profile/users/', $name);
+                return response()->json(successResponse('Image profile uploaded.', ['origin_name' => $image->getClientOriginalName(), 'img_name' => "/files/image/profile/users/{$name}"]), 200);
+            }
+        }
     }
 
     /**
