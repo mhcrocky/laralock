@@ -84,7 +84,18 @@ class UserProfileController extends Controller
      */
     public function update($id)
     {
-        //
+        if (request()->has('_update')) {
+            if (request('_update') == 'biodata') {
+                $validator = Validator(request()->all(), [
+                    'name' => 'required|string||regex:/^[a-zA-Z_\s]+$/i',
+                    'image' => 'nullable|string'
+                ]);
+                if ($validator->fails()) {
+                    return response()->json(errorResponse($validator->errors()), 202);
+                }
+                return response()->json(successResponse('', request()->all()), 200);
+            }
+        }
     }
 
     /**
