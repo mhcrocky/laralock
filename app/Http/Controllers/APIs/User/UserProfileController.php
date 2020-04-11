@@ -4,6 +4,7 @@ namespace App\Http\Controllers\APIs\User;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Auth\User;
 use App\Models\Auth\UserBiodata;
 
@@ -103,7 +104,25 @@ class UserProfileController extends Controller
                 }
                 return response()->json(errorResponse('Failed to update biodata'), 202);
             }
+            if (request('_update') == 'password') {
+                $validator = Validator(request()->all(), [
+                    'old_pass' => 'required|string',
+                    'new_pass' => 'required|string'
+                ]);
+                if ($validator->fails()) {
+                    return response()->json(errorResponse($validator->errors()), 202);
+                }
+                if (Hash::check(request('old_pass'), Auth::user()->password)) {
+                    $updatePassword = User::where('code', Auth::user()->code)->update(['password' => Hash::make(request('new_pass'))]);
+                    if ($updatePassword) {
+                        return response()->json(successResponse('Successfully update password'), 201);
+                    }
+                    return response()->json(errorResponse('Failed to update your password'), 202);
+                }
+                return response()->json(errorResponse('Current password is incorrect'), 202);
+            }
         }
+        return _throwErrorResponse();
     }
 
     /**
