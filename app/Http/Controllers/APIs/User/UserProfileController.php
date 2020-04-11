@@ -5,6 +5,7 @@ namespace App\Http\Controllers\APIs\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Auth\User;
+use App\Models\Auth\UserBiodata;
 
 class UserProfileController extends Controller
 {
@@ -89,11 +90,18 @@ class UserProfileController extends Controller
                 $validator = Validator(request()->all(), [
                     'name' => 'required|string||regex:/^[a-zA-Z_\s]+$/i',
                     'image' => 'nullable|string'
+                ], [
+                    'name.required' => 'Name cannot be empty',
+                    'name.regex' => 'Format Name is wrong',
                 ]);
                 if ($validator->fails()) {
                     return response()->json(errorResponse($validator->errors()), 202);
                 }
-                return response()->json(successResponse('', request()->all()), 200);
+                $updateBiodata = request('image') ? UserBiodata::where('code', Auth::user()->code)->update(['name' => request('name'), 'profile_img' => request('image')]) : UserBiodata::where('code', Auth::user()->code)->update(['name' => request('name')]);
+                if ($updateBiodata) {
+                    return response()->json(successResponse('Successfully update biodata'), 201);
+                }
+                return response()->json(errorResponse('Failed to update biodata'), 202);
             }
         }
     }
