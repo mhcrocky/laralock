@@ -1,13 +1,14 @@
 {
     "name": "thebachtiarz/laralock",
     "type": "project",
-    "description": "Laravel 7 Airlock Production.",
-    "version": "v1.0.1",
+    "description": "Laravel 7 Sanctum Production.",
+    "version": "v1.1.0",
     "keywords": [
         "framework",
         "laravel",
         "thebachtiarz",
-        "laralock"
+        "laralock",
+        "sanctum"
     ],
     "license": "MIT",
     "require": {
