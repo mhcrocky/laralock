@@ -36,7 +36,7 @@ class AuthController extends Controller
             if (Auth::user()->active == User_setActiveStatus('active')) {
                 return $this->respondWithToken(Auth::user()->createToken(request('device') ? (request('device') . "-" . getClientIpAddress()) : ("_jwtApiToken-" . getClientIpAddress()))->plainTextToken);
             }
-            return response()->json(errorResponse('Your account has been ' . User_getActiveStatus(Auth::user()->active)), 202);
+            return response()->json(errorResponse('Your account has been ' . User_getActiveStatus(Auth::user()->active) . ' due to bad behavior.'), 202);
         }
         return response()->json(errorResponse('Please verify your account first'), 202);
     }

@@ -10,6 +10,11 @@ use App\Models\Auth\UserBiodata;
 
 class UserProfileController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['useractive:active'], ['except' => ['index']]);
+    }
+
     /**
      * Display a listing of the resource.
      *

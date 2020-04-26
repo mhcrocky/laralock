@@ -49,9 +49,3 @@ Route::group(['middleware' => ['auth:sanctum', 'verified'], 'prefix' => 'user'],
     Route::resource('/me', 'APIs\UserTestController')->except(['create', 'edit']); // testing purpose
     Route::resource('/profile', 'APIs\User\UserProfileController')->except(['create', 'edit']);
 });
-
-
-/**
- * ! issue line 20
- * @ Need to create a middleware which only accepts from trusted front-end
- */

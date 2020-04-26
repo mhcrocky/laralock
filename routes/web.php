@@ -14,5 +14,5 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return _throwErrorResponse();
+    return redirect()->away(env('SANCTUM_STATEFUL_DOMAINS'));
 })->name('web.login');

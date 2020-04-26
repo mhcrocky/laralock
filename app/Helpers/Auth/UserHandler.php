@@ -54,6 +54,7 @@ function User_getActiveStatus($status)
     if ($status == '5') {
         return 'block';
     }
+    return 'black-list';
 }
 
 /**
