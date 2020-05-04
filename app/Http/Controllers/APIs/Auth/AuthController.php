@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 # Models
 use App\Models\Auth\User;
 use App\Models\Access\ForgetPassword; // ! ['user_access', 'user_email']
+use App\Models\Auth\UserLoginHistory; // ! ['code', 'ipaddr', 'info']
 
 class AuthController extends Controller
 {
@@ -22,7 +23,8 @@ class AuthController extends Controller
         $validator = Validator(request()->all(), [
             'email' => 'required|string|email',
             'password' => 'required|string',
-            'device' => 'nullable|string|alpha_num'
+            'device' => 'nullable|string',
+            'uadata' => 'nullable|string'
         ]);
         if ($validator->fails()) {
             return response()->json(errorResponse($validator->errors()), 202);
@@ -34,6 +36,7 @@ class AuthController extends Controller
         }
         if (Auth::user()->email_verified_at) {
             if (Auth::user()->active == User_setActiveStatus('active')) {
+                UserLoginHistory::create(['code' => Auth::user()->code, 'ipaddr' => getClientIpAddress(), 'info' => request('uadata')]);
                 return $this->respondWithToken(Auth::user()->createToken(request('device') ? (request('device') . "-" . getClientIpAddress()) : ("_jwtApiToken-" . getClientIpAddress()))->plainTextToken);
             }
             return response()->json(errorResponse('Your account has been ' . User_getActiveStatus(Auth::user()->active) . ' due to bad behavior.'), 202);
