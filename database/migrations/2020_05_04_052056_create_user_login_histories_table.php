@@ -16,6 +16,7 @@ class CreateUserLoginHistoriesTable extends Migration
         Schema::create('user_login_histories', function (Blueprint $table) {
             $table->id();
             $table->string('code');
+            $table->string('log_code');
             $table->string('ipaddr');
             $table->text('info');
             $table->timestamp('created_at')->useCurrent();

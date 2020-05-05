@@ -36,7 +36,7 @@ class AuthController extends Controller
         }
         if (Auth::user()->email_verified_at) {
             if (Auth::user()->active == User_setActiveStatus('active')) {
-                UserLoginHistory::create(['code' => Auth::user()->code, 'ipaddr' => getClientIpAddress(), 'info' => request('uadata')]);
+                UserLoginHistory::create(['code' => Auth::user()->code, 'log_code' => randString(20), 'ipaddr' => getClientIpAddress(), 'info' => request('uadata')]);
                 return $this->respondWithToken(Auth::user()->createToken(request('device') ? (request('device') . "-" . getClientIpAddress()) : ("_jwtApiToken-" . getClientIpAddress()))->plainTextToken);
             }
             return response()->json(errorResponse('Your account has been ' . User_getActiveStatus(Auth::user()->active) . ' due to bad behavior.'), 202);
