@@ -62,13 +62,25 @@ function Carbon_HumanFullDateTimeNow()
 }
 
 /**
+ * parse full date time
+ * for human
+ *
+ * @param date $datetime
+ * @return void
+ */
+function Carbon_HumanFullDateTime($datetime)
+{
+    return Carbon::parse($datetime)->format('l, d F Y H:i:s');
+}
+
+/**
  * convert  date time to date only
  * for DB
  *
  * @param date $datetime
  * @return void
  */
-function DBDateParse($datetime)
+function Carbon_DBDateParse($datetime)
 {
     return Carbon::parse($datetime)->format('Y-m-d');
 }
@@ -124,5 +136,38 @@ function Carbon_HumanRangeDateTimeDuration($start, $end)
         return Carbon::parse($start)->format('l, d F Y') . '. ' . Carbon::parse($start)->format('H:i') . ' - ' . Carbon::parse($end)->format('H:i');
     } else {
         return Carbon::parse($start)->format('l, d F Y H:i') . ' - ' . Carbon::parse($end)->format('l, d F Y H:i');
+    }
+}
+
+/**
+ * get date yesterday by specified date
+ *
+ * @param date $datetime
+ * @param integer $days
+ * @return void
+ */
+function Carbon_DateSubYesterday($datetime, $days = 1)
+{
+    return Carbon::parse($datetime)->subDay($days)->toDateTimeString();
+}
+
+/**
+ * get range date yesterday by today
+ *
+ * @param string $rangedate
+ * @return void
+ */
+function Carbon_RangeDateYesterday($rangedate)
+{
+    if ($rangedate == 'today') {
+        return Carbon_dateSubYesterday(Carbon_DBtimeToday(), 0);
+    } elseif ($rangedate == 'yesterday') {
+        return Carbon_dateSubYesterday(Carbon_DBtimeToday(), 1);
+    } elseif ($rangedate == 'last-week') {
+        return Carbon_dateSubYesterday(Carbon_DBtimeToday(), 7);
+    } elseif ($rangedate == 'last-month') {
+        return Carbon_dateSubYesterday(Carbon_DBtimeToday(), 30);
+    } else {
+        return Carbon_dateSubYesterday(Carbon_DBtimeToday(), 10000);
     }
 }

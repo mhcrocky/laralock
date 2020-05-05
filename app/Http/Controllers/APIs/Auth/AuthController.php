@@ -15,7 +15,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth:sanctum', 'verified'], ['except' => ['login', 'register', 'register_verify', 'lost_password', 'lost_password_access', 'lost_password_recover']]);
+        $this->middleware(['auth:sanctum', 'verified'], ['only' => ['credential', 'logout']]);
     }
 
     public function login()

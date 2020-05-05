@@ -48,4 +48,5 @@ Route::group([/*'middleware' => 'api', */'prefix' => 'access'], function () {
 Route::group(['middleware' => ['auth:sanctum', 'verified'], 'prefix' => 'user'], function () {
     Route::resource('/me', 'APIs\UserTestController')->except(['create', 'edit']); // testing purpose
     Route::resource('/profile', 'APIs\User\UserProfileController')->except(['create', 'edit']);
+    Route::resource('/history/login', 'APIs\User\UserLoginHistController')->except(['create', 'edit']);
 });
