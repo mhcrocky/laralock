@@ -28,6 +28,10 @@ class UserLoginHistController extends Controller
                 $history = UserLoginHistory::where([['code', Auth::user()->code], ['created_at', '>=', Carbon_RangeDateYesterday(request('_loghistory') ? request('_loghistory') : 'last-week')]])->get()->map->userLoginHistorySimpleMap();
                 return response()->json(dataResponse($history), 200);
             }
+            if (request()->has('_logdetailuser')) {
+                $detail = UserLoginHistory::where([['code', Auth::user()->code], ['log_code', request('_logdetailuser')]])->get()->map->userLoginHistoryFullMap();
+                return response()->json(dataResponse($detail), 200);
+            }
         }
         return _throwErrorResponse();
     }

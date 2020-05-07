@@ -16,7 +16,18 @@ class UserLoginHistory extends Model
             'device_type' => $log["devType"],
             'device_name' => "{$log["osName"]} - {$log["osVersion"]}",
             'ip_address' => $this->ipaddr,
-            'date_time' => Carbon_HumanFullDateTime($this->created_at)
+            'date_time' => Carbon_HumanDateTime($this->created_at)
+        ];
+    }
+
+    public function userLoginHistoryFullMap()
+    {
+        $log = $this->logDeviceInfo();
+        return [
+            'log_code' => $this->log_code,
+            'device_info' => $log,
+            'ip_address' => $this->ipaddr,
+            'date_time' => Carbon_HumanFullDateTime($this->created_at) 
         ];
     }
 

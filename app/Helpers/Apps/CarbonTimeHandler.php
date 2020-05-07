@@ -74,6 +74,18 @@ function Carbon_HumanFullDateTime($datetime)
 }
 
 /**
+ * parse date time
+ * for human
+ *
+ * @param date $datetime
+ * @return void
+ */
+function Carbon_HumanDateTime($datetime)
+{
+    return Carbon::parse($datetime)->format('d F Y H:i:s');
+}
+
+/**
  * convert  date time to date only
  * for DB
  *
