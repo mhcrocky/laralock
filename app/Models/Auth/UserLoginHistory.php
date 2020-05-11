@@ -16,7 +16,7 @@ class UserLoginHistory extends Model
             'device_type' => $log["devType"],
             'device_name' => "{$log["osName"]} - {$log["osVersion"]}",
             'ip_address' => $this->ipaddr,
-            'date_time' => Carbon_HumanDateTime($this->created_at)
+            'date_time' => Carbon_diffForHumans($this->created_at)
         ];
     }
 
