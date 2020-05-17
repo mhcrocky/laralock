@@ -32,7 +32,7 @@ composer create-project thebachtiarz/laralock
 cd laralock ;
 cp .env.example .env ;
 php artisan key:generate ;
-composer install ;
+composer update ;
 php artisan migrate ;
 ```
 
@@ -41,3 +41,6 @@ php artisan migrate ;
 ##### Regards :
 
 [TheBachtiarz](https://github.com/thebachtiarz/)
+
+**~~~** **FYI** **~~~**
+This project is only for back-end purposes, if you need a front-end for testing, I suggest you use [quasar-project](https://github.com/thebachtiarz/quasar-project) for your front-end, Yes, that is open source too :)
