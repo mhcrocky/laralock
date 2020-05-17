@@ -42,5 +42,5 @@ php artisan migrate ;
 
 [TheBachtiarz](https://github.com/thebachtiarz/)
 
-**~~~** **FYI** **~~~**
-This project is only for back-end purposes, if you need a front-end for testing, I suggest you use [quasar-project](https://github.com/thebachtiarz/quasar-project) for your front-end, Yes, that is open source too :)
+##### **~~~** **FYI** **~~~**
+This project is only for back-end purposes, if you need a front-end for testing, try [quasar-project](https://github.com/thebachtiarz/quasar-project). Yes, that is open source too :).
