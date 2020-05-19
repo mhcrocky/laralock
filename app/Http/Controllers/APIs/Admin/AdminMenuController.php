@@ -4,7 +4,6 @@ namespace App\Http\Controllers\APIs\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
-use App\Models\Auth\User;
 
 class AdminMenuController extends Controller
 {
@@ -17,13 +16,13 @@ class AdminMenuController extends Controller
     {
         $data = [];
         if (request()->has('_users')) {
-            $getUser = DB::table('users')->join('user_biodatas', 'users.code', '=', 'user_biodatas.code')->join('user_statuses', 'users.code', '=', 'user_statuses.code')->select('name', 'email', 'users.code', 'profile_img', 'active', 'status', 'users.created_at')->where('user_statuses.status', User_setStatus('user'));
+            $getUser = DB::table('users')->join('user_biodatas', 'users.code', '=', 'user_biodatas.code')->join('user_statuses', 'users.code', '=', 'user_statuses.code')->select('name', 'users.code', 'profile_img', 'active', 'status', 'users.created_at')->where('user_statuses.status', User_setStatus('user'));
             if (request('_users') == 'countOnly') {
                 $data['users'] = strval($getUser->count());
             } else {
                 $data['users']['count'] = strval($getUser->count());
                 $data['users']['list'] = $getUser->get()->map(function ($user) {
-                    return ['name' => $user->name, 'profile_img' => $user->profile_img, 'status' => User_getStatusForHuman($user->status), 'email' => $user->email, 'code' => $user->code, 'active' => User_getActiveStatus($user->active), 'registered' => Carbon_HumanDateTime($user->created_at)];
+                    return ['name' => $user->name, 'profile_img' => $user->profile_img, 'status' => User_getStatusForHuman($user->status), 'code' => $user->code, 'active' => ucfirst(User_getActiveStatus($user->active)), 'registered' => Carbon_HumanDateTime($user->created_at)];
                 });
             }
         }
