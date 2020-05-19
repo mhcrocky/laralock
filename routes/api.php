@@ -50,3 +50,11 @@ Route::group(['middleware' => ['auth:sanctum', 'verified'], 'prefix' => 'user'],
     Route::resource('/profile', 'APIs\User\UserProfileController')->except(['create', 'edit']);
     Route::resource('/history/login', 'APIs\User\UserLoginHistController')->except(['create', 'edit']);
 });
+
+/**
+ * admin resources
+ * access : /api/admin/---
+ */
+Route::group(['middleware' => ['auth:sanctum', 'verified', 'checkrole:admin'], 'prefix' => 'admin'], function () {
+    Route::resource('/menu', 'APIs\Admin\AdminMenuController')->except(['create', 'edit']);
+});
