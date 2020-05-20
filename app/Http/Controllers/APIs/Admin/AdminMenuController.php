@@ -4,6 +4,8 @@ namespace App\Http\Controllers\APIs\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use App\Models\Auth\User;
+use App\Models\Auth\UserLoginHistory;
 
 class AdminMenuController extends Controller
 {
@@ -24,6 +26,14 @@ class AdminMenuController extends Controller
                 $data['users']['list'] = $getUser->get()->map(function ($user) {
                     return ['name' => $user->name, 'profile_img' => $user->profile_img, 'status' => User_getStatusForHuman($user->status), 'code' => $user->code, 'active' => ucfirst(User_getActiveStatus($user->active)), 'registered' => Carbon_HumanDateTime($user->created_at)];
                 });
+            }
+        }
+        if (request()->has('_user')) {
+            if (request('_user')) {
+                $getUser = User::where('code', request('_user'));
+                $getUserHistories = UserLoginHistory::where('code', request('_user'));
+                $data['user'] = count($getUser->get()) ? $getUser->get()->map->userDetailMap()[0] : [];
+                $data['history'] = count($getUserHistories->get()) ? $getUserHistories->get()->map->userLoginHistorySimpleMap() : [];
             }
         }
         return response()->json(dataResponse($data), 200);

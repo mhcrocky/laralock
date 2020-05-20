@@ -29,7 +29,9 @@ class UserLoginHistController extends Controller
                 return response()->json(dataResponse($history), 200);
             }
             if (request()->has('_logdetailuser')) {
-                $detail = UserLoginHistory::where([['code', Auth::user()->code], ['log_code', request('_logdetailuser')]])->get()->map->userLoginHistoryFullMap();
+                $detail = [];
+                if (User_getStatus(Auth::user()->userstat->status) == 'admin') $detail = UserLoginHistory::where('log_code', request('_logdetailuser'))->get()->map->userLoginHistoryFullMap();
+                else $detail = UserLoginHistory::where([['code', Auth::user()->code], ['log_code', request('_logdetailuser')]])->get()->map->userLoginHistoryFullMap();
                 return response()->json(dataResponse($detail), 200);
             }
         }

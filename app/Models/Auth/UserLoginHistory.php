@@ -24,10 +24,12 @@ class UserLoginHistory extends Model
     {
         $log = $this->logDeviceInfo();
         return [
+            'user_name' => User_getNameByCode($this->code),
+            'user_img' => User_getImgProfileByCode($this->code),
             'log_code' => $this->log_code,
             'device_info' => $log,
             'ip_address' => $this->ipaddr,
-            'date_time' => Carbon_HumanFullDateTime($this->created_at) 
+            'date_time' => Carbon_HumanFullDateTime($this->created_at)
         ];
     }
 

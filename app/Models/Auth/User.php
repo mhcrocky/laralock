@@ -49,6 +49,19 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    public function userDetailMap()
+    {
+        return [
+            'name' => $this->userBio->name,
+            'profile_img' => $this->userBio->profile_img,
+            'email' => $this->email,
+            'status' => User_getStatusForHuman($this->userstat->status),
+            'code' => $this->code,
+            'active' => ucfirst(User_getActiveStatus($this->active)),
+            'registered' => Carbon_HumanDateTime($this->created_at)
+        ];
+    }
+
     # pivot
     public function userbio()
     {

@@ -95,6 +95,18 @@ function User_getNameByCode($code)
 }
 
 /**
+ * get user image profile by code
+ *
+ * @param string $code
+ * @return void
+ */
+function User_getImgProfileByCode($code)
+{
+    $user = UserBiodata::where('code', $code)->first('profile_img');
+    return $user && $user['profile_img'] ? $user['profile_img'] : null;
+}
+
+/**
  * get user status by code
  *
  * @param string $code
