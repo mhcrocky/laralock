@@ -51,10 +51,17 @@ class AuthController extends Controller
 
     public function logout()
     {
-        if (Auth::user()->tokens()->delete()) {
-            return response()->json(successResponse('Successfully Logout'), 201);
+        if (request('_action') == 'revoke') {
+            if (Auth::user()->tokens()->delete()) {
+                return response()->json(successResponse('Successfully Logout and Revoke All Logins'), 201);
+            }
+            return response()->json(errorResponse('Failed to Logout'), 202);
+        } else {
+            if (Auth::user()->currentAccessToken()->delete()) {
+                return response()->json(successResponse('Successfully Logout'), 201);
+            }
+            return response()->json(errorResponse('Failed to Logout'), 202);
         }
-        return response()->json(errorResponse('Failed to Logout'), 202);
     }
 
     public function lost_password()
