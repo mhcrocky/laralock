@@ -16,6 +16,11 @@ class AdminMenuController extends Controller
      */
     public function index()
     {
+        $validator = Validator(request()->all(), [
+            '_users' => 'nullable|string|alpha_dash',
+            '_user' => 'nullable|string|alpha_num'
+        ]);
+        if ($validator->fails()) return response()->json(errorResponse($validator->errors()), 202);
         $data = [];
         if (request()->has('_users')) {
             $getUser = DB::table('users')->join('user_biodatas', 'users.code', '=', 'user_biodatas.code')->join('user_statuses', 'users.code', '=', 'user_statuses.code')->select('name', 'users.code', 'profile_img', 'active', 'status', 'users.created_at')->where('user_statuses.status', User_setStatus('user'));
@@ -89,7 +94,18 @@ class AdminMenuController extends Controller
      */
     public function update($id)
     {
-        //
+        if (request()->has('_user')) {
+            $validator = Validator(request()->all(), [
+                '_user' => 'required|string|alpha_num',
+                '_setNewActiveStatus' => 'required|string|alpha'
+            ]);
+            if ($validator->fails()) return response()->json(errorResponse($validator->errors()), 202);
+            if (request()->has('_setNewActiveStatus')) {
+                $setNewActiveStatus = User::where('code', request('_user'))->update(['active' => User_setActiveStatus(strtolower(request('_setNewActiveStatus')))]);
+                if ($setNewActiveStatus) return response()->json(successResponse('Successfully update new active status to ' . request('_setNewActiveStatus')), 201);
+                else return response()->json(errorResponse('Failed to update new active status'), 202);
+            }
+        }
     }
 
     /**
