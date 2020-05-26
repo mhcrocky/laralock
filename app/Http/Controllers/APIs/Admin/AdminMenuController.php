@@ -26,7 +26,7 @@ class AdminMenuController extends Controller
          * get user count and list
          */
         if (request()->has('_users')) {
-            $getUsers = $this->getUsers()->where('email_verified_at', '!=', null);
+            $getUsers = $this->getUsers()->where([['email_verified_at', '!=', null], ['deleted_at', null]]);
             if (request('_users') == 'countOnly') {
                 $data['users'] = strval($getUsers->count());
             } else {
@@ -38,7 +38,7 @@ class AdminMenuController extends Controller
             }
         }
         if (request()->has('_newMembers')) {
-            $getNewMembers = $this->getUsers()->where('email_verified_at', null);
+            $getNewMembers = $this->getUsers()->where([['email_verified_at', null], ['deleted_at', null]]);
             if (request('_newMembers') == 'countOnly') {
                 $data['newMembers'] = strval($getNewMembers->count());
             } else {
