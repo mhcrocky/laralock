@@ -4,6 +4,7 @@ namespace App\Http\Controllers\APIs\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use App\Models\Access\ForgetPassword;
 use App\Models\Auth\User;
 use App\Models\Auth\UserLoginHistory;
 
@@ -26,7 +27,7 @@ class AdminMenuController extends Controller
          * get user count and list
          */
         if (request()->has('_users')) {
-            $getUsers = $this->getUsers()->where([['email_verified_at', '!=', null], ['deleted_at', null]]);
+            $getUsers = $this->getUsers()->whereNotNull('email_verified_at')->whereNull('deleted_at');
             if (request('_users') == 'countOnly') {
                 $data['users'] = strval($getUsers->count());
             } else {
@@ -37,8 +38,25 @@ class AdminMenuController extends Controller
                 });
             }
         }
+        /**
+         * get unlisted user count and list
+         */
+        if (request()->has('_unlistedUsers')) {
+            $getUsers = $this->getUsers()->whereNotNull('email_verified_at')->whereNotNull('deleted_at');
+            if (request('_unlistedUsers') == 'countOnly') {
+                $data['unlistedUsers'] = strval($getUsers->count());
+            } else {
+                $data['unlistedUsers']['count'] = strval($getUsers->count());
+                $data['unlistedUsers']['list'] = $getUsers->get()->map(function ($user) {
+                    return ['name' => $user->name, 'profile_img' => $user->profile_img, 'code' => $user->code, 'active' => ucfirst(User_getActiveStatus($user->active)), 'unlisted_at' => Carbon_HumanDateTime($user->deleted_at), 'registered' => Carbon_HumanDateTime($user->created_at)];
+                });
+            }
+        }
+        /**
+         * get new member register count and list
+         */
         if (request()->has('_newMembers')) {
-            $getNewMembers = $this->getUsers()->where([['email_verified_at', null], ['deleted_at', null]]);
+            $getNewMembers = $this->getUsers()->whereNull('email_verified_at')->whereNull('deleted_at');
             if (request('_newMembers') == 'countOnly') {
                 $data['newMembers'] = strval($getNewMembers->count());
             } else {
@@ -46,6 +64,17 @@ class AdminMenuController extends Controller
                 $data['newMembers']['list'] = $getNewMembers->get()->map(function ($user) {
                     return ['name' => $user->name, 'profile_img' => $user->profile_img, 'status' => User_getStatusForHuman($user->status), 'code' => $user->code, 'active' => ucfirst(User_getActiveStatus($user->active)), 'registered' => Carbon_HumanDateTime($user->created_at)];
                 });
+            }
+        }
+        /**
+         * get user lost password count and list
+         */
+        if (request()->has('_lostPassword')) {
+            if (request('_lostPassword') == 'countOnly') {
+                $data['lostPassword'] = strval($this->getUserLostPassord()->with('user')->count());
+            } else {
+                $data['lostPassword']['count'] = strval($this->getUserLostPassord()->with('user')->count());
+                $data['lostPassword']['list'] = $this->getUserLostPassord()->with('user')->get()->map->getLostPasswordListMap();
             }
         }
         /**
@@ -150,7 +179,7 @@ class AdminMenuController extends Controller
         return DB::table('users')
             ->join('user_biodatas', 'users.code', '=', 'user_biodatas.code')
             ->join('user_statuses', 'users.code', '=', 'user_statuses.code')
-            ->select('name', 'users.code', 'profile_img', 'active', 'status', 'users.created_at')
+            ->select('name', 'users.code', 'profile_img', 'active', 'status', 'users.created_at', 'deleted_at')
             ->where('user_statuses.status', User_setStatus('user'));
     }
 
@@ -168,6 +197,11 @@ class AdminMenuController extends Controller
     private function getUserHistory($userCode)
     {
         return UserLoginHistory::where('code', $userCode);
+    }
+
+    private function getUserLostPassord()
+    {
+        return ForgetPassword::select('*');
     }
 
     /**

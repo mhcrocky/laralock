@@ -8,7 +8,7 @@ class UserBiodata extends Model
 {
     protected $fillable = ['code', 'name', 'profile_img'];
 
-    #pivot
+    #relation
     public function user()
     {
         return $this->belongsTo('App\Models\Auth\User');

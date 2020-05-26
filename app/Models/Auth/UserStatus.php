@@ -8,7 +8,7 @@ class UserStatus extends Model
 {
     protected $fillable = ['code', 'status'];
 
-    #pivot
+    #relation
     public function user()
     {
         return $this->belongsTo('App\Models\Auth\User');

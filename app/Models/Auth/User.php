@@ -63,14 +63,19 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    # pivot
+    # relation
     public function userbio()
     {
-        return $this->hasOne('App\Models\Auth\UserBiodata', 'code', 'code');
+        return $this->hasOne('App\Models\Auth\UserBiodata', 'code', 'code')->withDefault(['info' => 'User not found']);
     }
 
     public function userstat()
     {
-        return $this->hasOne('App\Models\Auth\UserStatus', 'code', 'code');
+        return $this->hasOne('App\Models\Auth\UserStatus', 'code', 'code')->withDefault(['info' => 'User not found']);
+    }
+
+    public function lostpassword()
+    {
+        return $this->hasMany('App\Models\Access\ForgetPassword', 'email', 'user_email')->withDefault(['info' => 'User not found']);
     }
 }
