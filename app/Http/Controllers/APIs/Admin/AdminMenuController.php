@@ -53,7 +53,7 @@ class AdminMenuController extends Controller
          */
         if (request()->has('_user')) {
             if (request('_user')) {
-                $getUser = User::where('code', request('_user'))->get();
+                $getUser = $this->getUser(request('_user'))->get();
                 $getUserHistories = UserLoginHistory::where('code', request('_user'))->get();
                 $data['user'] = count($getUser) ? $getUser->map->userDetailMap()[0] : [];
                 $data['history'] = count($getUserHistories) ? $getUserHistories->map->userLoginHistorySimpleMap() : [];
@@ -119,7 +119,7 @@ class AdminMenuController extends Controller
             ]);
             if ($validator->fails()) return response()->json(errorResponse($validator->errors()), 202);
             if (request()->has('_setNewActiveStatus')) {
-                $setNewActiveStatus = User::where('code', request('_user'))->update(['active' => User_setActiveStatus(strtolower(request('_setNewActiveStatus')))]);
+                $setNewActiveStatus = $this->getUser(request('_user'))->update(['active' => User_setActiveStatus(strtolower(request('_setNewActiveStatus')))]);
                 if ($setNewActiveStatus) return response()->json(successResponse('Successfully update new active status to ' . request('_setNewActiveStatus')), 201);
                 else return response()->json(errorResponse('Failed to update new active status'), 202);
             }
@@ -154,6 +154,11 @@ class AdminMenuController extends Controller
             ->where('user_statuses.status', User_setStatus('user'));
     }
 
+    private function getUser($userCode)
+    {
+        return User::where('code', $userCode);
+    }
+
     /**
      * get user histories
      *
@@ -165,14 +170,35 @@ class AdminMenuController extends Controller
         return UserLoginHistory::where('code', $userCode);
     }
 
+    /**
+     * delete user using softDelete method
+     *
+     * @param string $userCode
+     * @param string $delMethod
+     * @return void
+     */
     private function deleteUser($userCode, $delMethod)
     {
-        if ($delMethod == 'force') {
-            // force delete
-            return response()->json('force delete ' . $userCode, 201);
+        $validator = Validator(['user_code' => $userCode, 'delete_method' => $delMethod], [
+            'user_code' => 'required|string|alpha_num',
+            'delete_method' => 'required|string|alpha'
+        ]);
+        if ($validator->fails()) return response()->json(errorResponse('Some inputs not correct'), 202);
+        $userIdentity = $this->getUser($userCode)->get();
+        if (count($userIdentity) && (User_getStatus($userIdentity[0]->userstat->status) != 'admin')) {
+            // anyway, who wants to kill admin :)
+            $userInfo = $userIdentity->map->userProfileMap()[0];
+            if ($delMethod == 'force') {
+                // force delete
+                return response()->json('force delete ' . $userCode, 201);
+            } else {
+                // soft delete
+                $softDelete = $this->getUser($userCode)->delete();
+                if ($softDelete) return response()->json(successResponse('User ' . $userInfo['name'] . ' has been deleted'), 201);
+                else return response()->json(errorResponse('Failed to delete user ' . $userInfo['name']), 202);
+            }
         } else {
-            // soft delete
-            return response()->json('soft delete ' . $userCode, 201);
+            return response()->json(errorResponse('User not found'), 202);
         }
     }
 }
