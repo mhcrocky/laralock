@@ -134,7 +134,9 @@ class AdminMenuController extends Controller
      */
     public function destroy($id)
     {
-        //
+        if (request()->has('_userDelete') && request()->has('_method')) {
+            return $this->deleteUser(request('_userDelete'), request('_method'));
+        }
     }
 
     # private methods
@@ -161,5 +163,16 @@ class AdminMenuController extends Controller
     private function getUserHistory($userCode)
     {
         return UserLoginHistory::where('code', $userCode);
+    }
+
+    private function deleteUser($userCode, $delMethod)
+    {
+        if ($delMethod == 'force') {
+            // force delete
+            return response()->json('force delete ' . $userCode, 201);
+        } else {
+            // soft delete
+            return response()->json('soft delete ' . $userCode, 201);
+        }
     }
 }
