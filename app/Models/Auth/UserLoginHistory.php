@@ -39,4 +39,10 @@ class UserLoginHistory extends Model
         $deviceLog = unserialize($this->info);
         return $deviceLog;
     }
+
+    #relation
+    public function user()
+    {
+        return $this->belongsTo('App\Models\Auth\User', 'code', 'code')->withDefault(['info' => 'User not found']);
+    }
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\APIs\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
 use App\Models\Access\ForgetPassword;
 use App\Models\Auth\User;
 use App\Models\Auth\UserLoginHistory;
@@ -32,24 +31,19 @@ class AdminMenuController extends Controller
                 $data['users'] = strval($getUsers->count());
             } else {
                 $data['users']['count'] = strval($getUsers->count());
-                $data['users']['list'] = $getUsers->get()->map(function ($user) {
-                    $lastLogin = count($this->getUserHistory($user->code)->get()) ? Carbon_HumanDateTime($this->getUserHistory($user->code)->latest()->first()->created_at) : 'Never Logged In';
-                    return ['name' => $user->name, 'profile_img' => $user->profile_img, 'code' => $user->code, 'active' => ucfirst(User_getActiveStatus($user->active)), 'last_login' => $lastLogin, 'registered' => Carbon_HumanDateTime($user->created_at)];
-                });
+                $data['users']['list'] = $getUsers->get()->map->userInfoListMap();
             }
         }
         /**
          * get unlisted user count and list
          */
         if (request()->has('_unlistedUsers')) {
-            $getUsers = $this->getUsers()->whereNotNull('email_verified_at')->whereNotNull('deleted_at');
+            $getUnlistedUsers = $this->getUsers()->whereNotNull('email_verified_at')->whereNotNull('deleted_at')->withTrashed();
             if (request('_unlistedUsers') == 'countOnly') {
-                $data['unlistedUsers'] = strval($getUsers->count());
+                $data['unlistedUsers'] = strval($getUnlistedUsers->count());
             } else {
-                $data['unlistedUsers']['count'] = strval($getUsers->count());
-                $data['unlistedUsers']['list'] = $getUsers->get()->map(function ($user) {
-                    return ['name' => $user->name, 'profile_img' => $user->profile_img, 'code' => $user->code, 'active' => ucfirst(User_getActiveStatus($user->active)), 'unlisted_at' => Carbon_HumanDateTime($user->deleted_at), 'registered' => Carbon_HumanDateTime($user->created_at)];
-                });
+                $data['unlistedUsers']['count'] = strval($getUnlistedUsers->count());
+                $data['unlistedUsers']['list'] = $getUnlistedUsers->get()->map->userInfoListMap();
             }
         }
         /**
@@ -61,20 +55,19 @@ class AdminMenuController extends Controller
                 $data['newMembers'] = strval($getNewMembers->count());
             } else {
                 $data['newMembers']['count'] = strval($getNewMembers->count());
-                $data['newMembers']['list'] = $getNewMembers->get()->map(function ($user) {
-                    return ['name' => $user->name, 'profile_img' => $user->profile_img, 'status' => User_getStatusForHuman($user->status), 'code' => $user->code, 'active' => ucfirst(User_getActiveStatus($user->active)), 'registered' => Carbon_HumanDateTime($user->created_at)];
-                });
+                $data['newMembers']['list'] = $getNewMembers->get()->map->userInfoListMap();
             }
         }
         /**
          * get user lost password count and list
          */
         if (request()->has('_lostPassword')) {
+            $getLostPassword = $this->getUserLostPassord();
             if (request('_lostPassword') == 'countOnly') {
-                $data['lostPassword'] = strval($this->getUserLostPassord()->with('user')->count());
+                $data['lostPassword'] = strval($getLostPassword->count());
             } else {
-                $data['lostPassword']['count'] = strval($this->getUserLostPassord()->with('user')->count());
-                $data['lostPassword']['list'] = $this->getUserLostPassord()->with('user')->get()->map->getLostPasswordListMap();
+                $data['lostPassword']['count'] = strval($getLostPassword->count());
+                $data['lostPassword']['list'] = $getLostPassword->get()->map->getLostPasswordListMap();
             }
         }
         /**
@@ -82,10 +75,18 @@ class AdminMenuController extends Controller
          */
         if (request()->has('_user')) {
             if (request('_user')) {
-                $getUser = $this->getUser(request('_user'))->get();
-                $getUserHistories = UserLoginHistory::where('code', request('_user'))->get();
-                $data['user'] = count($getUser) ? $getUser->map->userDetailMap()[0] : [];
-                $data['history'] = count($getUserHistories) ? $getUserHistories->map->userLoginHistorySimpleMap() : [];
+                $getUser = $this->getUser(request('_user'))->withTrashed();
+                $getUserHistories = $this->getUserHistory(request('_user'));
+                $data['user'] = $getUser->count() ? $getUser->get()->map->userDetailMap()[0] : [];
+                $data['history'] = $getUserHistories->count() ? $getUserHistories->get()->map->userLoginHistorySimpleMap() : [];
+            }
+        }
+
+        if (request()->has('_newMember')) {
+            if (request('_newMember')) {
+                $getUser = $this->getUser(request('_newMember'))->whereNull('email_verified_at');
+                $getUserHistories = $this->getUserHistory(request('_user'));
+                $data['user'] = $getUser->count() ? $getUser->get()->map->userNewInfoDetail()[0] : [];
             }
         }
         return response()->json(dataResponse($data), 200);
@@ -176,16 +177,19 @@ class AdminMenuController extends Controller
      */
     private function getUsers()
     {
-        return DB::table('users')
-            ->join('user_biodatas', 'users.code', '=', 'user_biodatas.code')
-            ->join('user_statuses', 'users.code', '=', 'user_statuses.code')
-            ->select('name', 'users.code', 'profile_img', 'active', 'status', 'users.created_at', 'deleted_at')
-            ->where('user_statuses.status', User_setStatus('user'));
+        // return DB::table('users')
+        //     ->join('user_biodatas', 'users.code', '=', 'user_biodatas.code')
+        //     ->join('user_statuses', 'users.code', '=', 'user_statuses.code')
+        //     ->select('name', 'users.code', 'profile_img', 'active', 'status', 'users.created_at', 'deleted_at')
+        //     ->where('user_statuses.status', User_setStatus('user'));
+        return User::whereIn('code', function ($query) {
+            $query->select('code')->from('user_statuses')->where('status', User_setStatus('user'));
+        });
     }
 
     private function getUser($userCode)
     {
-        return User::where('code', $userCode);
+        return User::with('userstat')->where('code', $userCode);
     }
 
     /**
@@ -201,7 +205,9 @@ class AdminMenuController extends Controller
 
     private function getUserLostPassord()
     {
-        return ForgetPassword::select('*');
+        return ForgetPassword::whereIn('user_email', function ($query) {
+            $query->select('email')->from('users')->whereNull('deleted_at');
+        });
     }
 
     /**
@@ -218,18 +224,21 @@ class AdminMenuController extends Controller
             'delete_method' => 'required|string|alpha'
         ]);
         if ($validator->fails()) return response()->json(errorResponse('Some inputs not correct'), 202);
-        $userIdentity = $this->getUser($userCode)->get();
-        if (count($userIdentity) && (User_getStatus($userIdentity[0]->userstat->status) != 'admin')) {
+        $userIdentity = $this->getUser($userCode);
+        $delMethod == 'force' ? $userIdentity->withTrashed() : '';
+        if ($userIdentity->count() && (User_getStatus($userIdentity->get()[0]->userstat->status) != 'admin')) {
             // anyway, who wants to kill admin :)
-            $userInfo = $userIdentity->map->userProfileMap()[0];
+            $userInfo = $userIdentity->get()->map->userProfileMap()[0];
             if ($delMethod == 'force') {
                 // force delete
-                return response()->json('force delete ' . $userCode, 201);
+                $forceDelete = false;
+                if ($forceDelete) return response()->json(successResponse('User ' . $userInfo['name'] . ' has been removed from membership'), 201);
+                else return response()->json(errorResponse('Failed to remove user ' . $userInfo['name']), 202);
             } else {
                 // soft delete
                 $softDelete = $this->getUser($userCode)->delete();
-                if ($softDelete) return response()->json(successResponse('User ' . $userInfo['name'] . ' has been deleted'), 201);
-                else return response()->json(errorResponse('Failed to delete user ' . $userInfo['name']), 202);
+                if ($softDelete) return response()->json(successResponse('User ' . $userInfo['name'] . ' has been removed'), 201);
+                else return response()->json(errorResponse('Failed to remove user ' . $userInfo['name']), 202);
             }
         } else {
             return response()->json(errorResponse('User not found'), 202);
