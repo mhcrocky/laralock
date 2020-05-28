@@ -26,7 +26,7 @@ class AdminMenuController extends Controller
          * get user count and list
          */
         if (request()->has('_users')) {
-            $getUsers = $this->getUsers()->whereNotNull('email_verified_at')->whereNull('deleted_at');
+            $getUsers = $this->getUsers()->whereNotNull('email_verified_at');
             if (request('_users') == 'countOnly') {
                 $data['users'] = strval($getUsers->count());
             } else {
@@ -38,7 +38,7 @@ class AdminMenuController extends Controller
          * get unlisted user count and list
          */
         if (request()->has('_unlistedUsers')) {
-            $getUnlistedUsers = $this->getUsers()->whereNotNull('email_verified_at')->whereNotNull('deleted_at')->withTrashed();
+            $getUnlistedUsers = $this->getUsers()->onlyTrashed();
             if (request('_unlistedUsers') == 'countOnly') {
                 $data['unlistedUsers'] = strval($getUnlistedUsers->count());
             } else {
@@ -50,7 +50,7 @@ class AdminMenuController extends Controller
          * get new member register count and list
          */
         if (request()->has('_newMembers')) {
-            $getNewMembers = $this->getUsers()->whereNull('email_verified_at')->whereNull('deleted_at');
+            $getNewMembers = $this->getUsers()->whereNull('email_verified_at');
             if (request('_newMembers') == 'countOnly') {
                 $data['newMembers'] = strval($getNewMembers->count());
             } else {
@@ -154,6 +154,24 @@ class AdminMenuController extends Controller
                 else return response()->json(errorResponse('Failed to update new active status'), 202);
             }
         }
+        if (request()->has('_userRestore')) {
+            $validator = Validator(request()->all(), [
+                '_userRestore' => 'required|string|alpha_num'
+            ]);
+            if ($validator->fails()) return response()->json(errorResponse($validator->errors()), 202);
+            $getUser = $this->getUser(request('_userRestore'))->withTrashed();
+            if ($getUser->count()) {
+                $foundUser = $getUser->get()->map->userDetailMap()[0];
+                $restoreUser = $getUser->restore();
+                if ($restoreUser) {
+                    return response()->json(successResponse('Successfully restore ' . $foundUser['name'] . ' to membership'), 201);
+                } else {
+                    return response()->json(errorResponse('Failed to restore ' . $foundUser['name']), 202);
+                }
+            } else {
+                return response()->json(errorResponse('User not found'), 202);
+            }
+        }
     }
 
     /**
@@ -177,11 +195,6 @@ class AdminMenuController extends Controller
      */
     private function getUsers()
     {
-        // return DB::table('users')
-        //     ->join('user_biodatas', 'users.code', '=', 'user_biodatas.code')
-        //     ->join('user_statuses', 'users.code', '=', 'user_statuses.code')
-        //     ->select('name', 'users.code', 'profile_img', 'active', 'status', 'users.created_at', 'deleted_at')
-        //     ->where('user_statuses.status', User_setStatus('user'));
         return User::whereIn('code', function ($query) {
             $query->select('code')->from('user_statuses')->where('status', User_setStatus('user'));
         });
@@ -231,7 +244,7 @@ class AdminMenuController extends Controller
             $userInfo = $userIdentity->get()->map->userProfileMap()[0];
             if ($delMethod == 'force') {
                 // force delete
-                $forceDelete = false;
+                $forceDelete = $userIdentity->forceDelete();
                 if ($forceDelete) return response()->json(successResponse('User ' . $userInfo['name'] . ' has been removed from membership'), 201);
                 else return response()->json(errorResponse('Failed to remove user ' . $userInfo['name']), 202);
             } else {

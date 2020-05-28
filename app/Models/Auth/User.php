@@ -84,6 +84,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'profile_img' => $this->userBio->profile_img,
             'email' => $this->email,
             'status' => User_getStatusForHuman($this->userstat->status),
+            'active' => ucfirst(User_getActiveStatus($this->active)),
             'code' => $this->code,
             'access' => $this->registermember->user_access,
             'registered' => Carbon_HumanDateTime($this->created_at)
