@@ -61,9 +61,9 @@ class AdminMenuController extends Controller
         /**
          * get user lost password count and list
          */
-        if (request()->has('_lostPassword')) {
+        if (request()->has('_lostPasswords')) {
             $getLostPassword = $this->getUserLostPassord();
-            if (request('_lostPassword') == 'countOnly') {
+            if (request('_lostPasswords') == 'countOnly') {
                 $data['lostPassword'] = strval($getLostPassword->count());
             } else {
                 $data['lostPassword']['count'] = strval($getLostPassword->count());
@@ -81,12 +81,21 @@ class AdminMenuController extends Controller
                 $data['history'] = $getUserHistories->count() ? $getUserHistories->get()->map->userLoginHistorySimpleMap() : [];
             }
         }
-
+        /**
+         * get new member register detail by code
+         */
         if (request()->has('_newMember')) {
             if (request('_newMember')) {
                 $getUser = $this->getUser(request('_newMember'))->whereNull('email_verified_at');
-                $getUserHistories = $this->getUserHistory(request('_user'));
                 $data['user'] = $getUser->count() ? $getUser->get()->map->userNewInfoDetail()[0] : [];
+            }
+        }
+        if (request()->has('_lostPassword')) {
+            if (request('_lostPassword')) {
+                $getUser = $this->getUserLostPassord()->whereIn('user_email', function ($query) {
+                    $query->select('email')->from('users')->where('code', request('_lostPassword'));
+                });
+                $data['user'] = $getUser->count() ? $getUser->get()->map->getLostPasswordDetailMap()[0] : [];
             }
         }
         return response()->json(dataResponse($data), 200);
@@ -185,6 +194,9 @@ class AdminMenuController extends Controller
         if (request()->has('_userDelete') && request()->has('_method')) {
             return $this->deleteUser(request('_userDelete'), request('_method'));
         }
+        if (request()->has('_lostPasswdRequest')) {
+            return $this->deleteLostPasswordRequest(request('_lostPasswdRequest'));
+        }
     }
 
     # private methods
@@ -216,6 +228,12 @@ class AdminMenuController extends Controller
         return UserLoginHistory::where('code', $userCode);
     }
 
+    /**
+     * get user lost passwords
+     * default => return all request from database
+     *
+     * @return void
+     */
     private function getUserLostPassord()
     {
         return ForgetPassword::whereIn('user_email', function ($query) {
@@ -252,6 +270,32 @@ class AdminMenuController extends Controller
                 $softDelete = $this->getUser($userCode)->delete();
                 if ($softDelete) return response()->json(successResponse('User ' . $userInfo['name'] . ' has been removed'), 201);
                 else return response()->json(errorResponse('Failed to remove user ' . $userInfo['name']), 202);
+            }
+        } else {
+            return response()->json(errorResponse('User not found'), 202);
+        }
+    }
+
+    /**
+     * delete lost password request
+     *
+     * @param string $accessCode
+     * @return void
+     */
+    private function deleteLostPasswordRequest($accessCode)
+    {
+        $validator = Validator(['access_code' => $accessCode], [
+            'access_code' => 'required|string|alpha_num'
+        ]);
+        if ($validator->fails()) return response()->json(errorResponse('Some inputs not correct'), 202);
+        $getRequest = $this->getUserLostPassord()->with('user.userbio')->where('user_access', $accessCode);
+        if ($getRequest->count()) {
+            $getName = $getRequest->get()[0]['user']['userbio']['name'];
+            $deleteRequest = $getRequest->delete();
+            if ($deleteRequest) {
+                return response()->json(successResponse("Successfully delete request from {$getName}"), 201);
+            } else {
+                return response()->json(errorResponse("Failed to delete {$getName}'s request"), 202);
             }
         } else {
             return response()->json(errorResponse('User not found'), 202);
