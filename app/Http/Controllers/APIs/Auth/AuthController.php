@@ -131,6 +131,7 @@ class AuthController extends Controller
     {
         return response()->json(dataResponse([
             'account_name' => Auth::user()->userbio->name,
+            'account_img' => Auth::user()->userbio->profile_img,
             'status' => User_getStatusForHuman(Auth::user()->userstat->status),
             'access_token' => $token,
             'token_type' => 'bearer'
