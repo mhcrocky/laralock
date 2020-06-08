@@ -4,6 +4,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Auth\User;
 use App\Models\Auth\UserBiodata;
 use App\Models\Auth\UserStatus;
+use App\Models\Auth\UserProfileImageHistory;
 
 class UserSeeder extends Seeder
 {
@@ -35,6 +36,12 @@ class UserSeeder extends Seeder
             UserStatus::create([
                 'code' => $user[$i]['code'],
                 'status' => $user[$i]['status']
+            ]);
+            UserProfileImageHistory::create([
+                'code' => $user[$i]['code'],
+                'image_url' => $user[$i]['profile_img'],
+                'image_name' => '17689101.jpeg',
+                'image_code' => randString(20)
             ]);
         }
     }

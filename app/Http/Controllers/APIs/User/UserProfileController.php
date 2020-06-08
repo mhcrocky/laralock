@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Auth\User;
 use App\Models\Auth\UserBiodata;
+use App\Models\Auth\UserProfileImageHistory;
 
 class UserProfileController extends Controller
 {
@@ -54,9 +55,17 @@ class UserProfileController extends Controller
                     return response()->json(errorResponse($validator->errors()), 202);
                 }
                 $image = request()->file('_image');
-                $name = 'USR-' . randString(25) . '.' . $image->getClientOriginalExtension();
-                $image->move('files/image/profile/users/', $name);
-                return response()->json(successResponse('Image profile uploaded.', ['origin_name' => $image->getClientOriginalName(), 'img_name' => "/files/image/profile/users/{$name}"]), 200);
+                $imgCode = randString(20);
+                $saveUrl = default_url_user_image();
+                $name = 'USR-' . $imgCode . '.' . $image->getClientOriginalExtension();
+                $image->move(substr($saveUrl, 1), $name);
+                UserProfileImageHistory::create([
+                    'code' => Auth::user()->code,
+                    'image_url' => "{$saveUrl}{$name}",
+                    'image_name' => $image->getClientOriginalName(),
+                    'image_code' => $imgCode
+                ]);
+                return response()->json(successResponse('Image profile uploaded.', ['origin_name' => $image->getClientOriginalName(), 'img_url' => "{$saveUrl}{$name}"]), 200);
             }
         }
     }

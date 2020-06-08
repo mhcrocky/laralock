@@ -49,6 +49,7 @@ Route::group(['middleware' => ['auth:sanctum', 'verified'], 'prefix' => 'user'],
     Route::resource('/me', 'APIs\UserTestController')->except(['create', 'edit']); // testing purpose
     Route::resource('/profile', 'APIs\User\UserProfileController')->except(['create', 'edit']);
     Route::resource('/history/login', 'APIs\User\UserLoginHistController')->except(['create', 'edit']);
+    Route::resource('/profile/image/history', 'APIs\User\UserProfileImageHistController')->except(['create', 'edit']);
 });
 
 /**

@@ -41,6 +41,17 @@ function apps_icon()
 }
 
 /**
+ * default url
+ * user profile image
+ *
+ * @return void
+ */
+function default_url_user_image()
+{
+    return '/files/image/profile/users/';
+}
+
+/**
  * default user image
  *
  * @return void
