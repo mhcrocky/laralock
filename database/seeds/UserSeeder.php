@@ -45,7 +45,7 @@ class UserSeeder extends Seeder
             ]);
         }
         // add more user
-        for ($i = 0; $i < env('SEED_MORE_USER'); $i++) {
+        for ($i = 0; $i < env('SEED_MORE_USER', 50); $i++) {
             $getName = randArray(Seed_getDummyName()) . ' ' . randArray(Seed_getDummyName());
             $getEmail = strtolower(str_replace(" ", "", $getName)) . mt_rand(1, 99) . '@mail.com';
             $moreUser = [
