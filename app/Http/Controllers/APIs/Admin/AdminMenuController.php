@@ -18,7 +18,12 @@ class AdminMenuController extends Controller
     {
         $validator = Validator(request()->all(), [
             '_users' => 'nullable|string|alpha_dash',
-            '_user' => 'nullable|string|alpha_num'
+            '_unlistedUsers' => 'nullable|string|alpha_dash',
+            '_newMembers' => 'nullable|string|alpha_dash',
+            '_lostPasswords' => 'nullable|string|alpha_dash',
+            '_user' => 'nullable|string|alpha_num',
+            '_newMember' => 'nullable|string|alpha_num',
+            '_lostPassword' => 'nullable|string|alpha_num'
         ]);
         if ($validator->fails()) return response()->json(errorResponse($validator->errors()), 202);
         $data = [];
