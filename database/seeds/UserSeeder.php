@@ -5,6 +5,7 @@ use App\Models\Auth\User;
 use App\Models\Auth\UserBiodata;
 use App\Models\Auth\UserStatus;
 use App\Models\Auth\UserProfileImageHistory;
+use Faker\Generator as Faker;
 
 class UserSeeder extends Seeder
 {
@@ -13,7 +14,7 @@ class UserSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(Faker $faker)
     {
         $user = [
             ['status' => User_setStatus('admin'), 'name' => 'My Name is Bachtiar', 'email' => 'bachtiar@mail.com', 'email_verified_at' => '2019-12-07 07:27:47', 'password' => '$2y$10$XsG.kSbJA1g15hcgxp/W6Offn8yLS/igQBBVMzTBBuNvFYt5gb14m', 'code' => '5emMFhIv84in6ccx6gW3xfJ6VqT3vtjxpwvakO6LknK99d0fbr615nDKhJEltks2', 'created_at' => '2019-12-07 07:27:02', 'updated_at' => '2019-12-07 07:27:47', 'active' => User_setActiveStatus('active'), 'profile_img' => '/files/image/profile/users/USR-Q3yszDnYjIkXq7G.jpg'],
@@ -45,35 +46,45 @@ class UserSeeder extends Seeder
             ]);
         }
         // add more user
+        $newUser = [];
+        $newUserBiodata = [];
+        $newUserStatus = [];
         for ($i = 0; $i < env('SEED_MORE_USER', 50); $i++) {
-            $getName = randArray(Seed_getDummyName()) . ' ' . randArray(Seed_getDummyName());
-            $getEmail = strtolower(str_replace(" ", "", $getName)) . mt_rand(1, 99) . '@mail.com';
             $moreUser = [
                 'code' => User_createNewCode(),
-                'name' => $getName,
-                'email' => $getEmail,
+                'name' => $faker->name,
+                'email' => $faker->unique()->safeEmail,
                 'email_verified_at' => Carbon_DBtimeNow(),
                 'password' => '$2y$10$0F3q8CDeDiEhqGlfxWmGPeqLLA7f5AsIgV.MZ6NoouGKaUzV0ZaXq', // @UserTest10
                 'active' => User_setActiveStatus('active'),
                 'status' => User_setStatus('user'),
                 'profile_img' => default_user_image()
             ];
-            User::create([
+            $newUser[] = [
                 'email' => $moreUser['email'],
                 'email_verified_at' => $moreUser['email_verified_at'],
                 'password' => $moreUser['password'],
                 'code' => $moreUser['code'],
                 'active' => $moreUser['active']
-            ]);
-            UserBiodata::create([
+            ];
+            $newUserBiodata[] = [
                 'code' => $moreUser['code'],
                 'name' => $moreUser['name'],
                 'profile_img' => $moreUser['profile_img']
-            ]);
-            UserStatus::create([
+            ];
+            $newUserStatus[] = [
                 'code' => $moreUser['code'],
                 'status' => $moreUser['status']
-            ]);
+            ];
+        }
+        foreach (array_chunk($newUser, 5000) as $setUser) {
+            User::insert($setUser);
+        }
+        foreach (array_chunk($newUserBiodata, 5000) as $setUserBiodata) {
+            UserBiodata::insert($setUserBiodata);
+        }
+        foreach (array_chunk($newUserStatus, 5000) as $setUserStatus) {
+            UserStatus::insert($setUserStatus);
         }
     }
 }
