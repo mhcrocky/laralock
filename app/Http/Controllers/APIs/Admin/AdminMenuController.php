@@ -32,11 +32,22 @@ class AdminMenuController extends Controller
          */
         if (request()->has('_users')) {
             $getUsers = $this->getUsers()->whereNotNull('email_verified_at');
+            $getUsersPag = $this->getUsers()->whereNotNull('email_verified_at')->paginate(10);
+            $getUsersPag->withPath(url('/api/admin/menu?_users=full'));
             if (request('_users') == 'countOnly') {
                 $data['users'] = strval($getUsers->count());
             } else {
+                $userToArray = $getUsersPag->toArray();
                 $data['users']['count'] = strval($getUsers->count());
-                $data['users']['list'] = $getUsers->get()->map->userInfoListMap();
+                $data['users']['list'] = $getUsersPag->getCollection()->map->userInfoListMap();
+                $data['users']['query'] = [
+                    'data_from' => $userToArray['from'],
+                    'data_to' => $userToArray['to'],
+                    'first_page' => $userToArray['first_page_url'],
+                    'prev_page' => $userToArray['prev_page_url'],
+                    'next_page' => $userToArray['next_page_url'],
+                    'last_page' => $userToArray['last_page_url']
+                ];
             }
         }
         /**
