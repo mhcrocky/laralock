@@ -223,7 +223,11 @@ class AdminMenuController extends Controller
      */
     private function getUsers()
     {
-        return User::whereIn('code', function ($query) {
+        return User::query()
+        ->select('users.*')
+        ->join('user_biodatas', 'users.code', '=', 'user_biodatas.code')
+        ->orderBy('user_biodatas.name')
+        ->whereIn('users.code', function ($query) {
             $query->select('code')->from('user_statuses')->where('status', User_setStatus('user'));
         });
     }
