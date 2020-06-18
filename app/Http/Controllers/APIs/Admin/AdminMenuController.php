@@ -23,7 +23,11 @@ class AdminMenuController extends Controller
             '_lostPasswords' => 'nullable|string|alpha_dash',
             '_user' => 'nullable|string|alpha_num',
             '_newMember' => 'nullable|string|alpha_num',
-            '_lostPassword' => 'nullable|string|alpha_num'
+            '_lostPassword' => 'nullable|string|alpha_num',
+            '_searchName' => 'nullable|string|min:3|regex:/^[a-zA-Z_\s]+$/i'
+        ], [
+            '_searchName.min' => 'You need at least 3 characters',
+            '_searchName.regex' => 'Dude, is there really someone with that name?'
         ]);
         if ($validator->fails()) return response()->json(errorResponse($validator->errors()), 202);
         $data = [];
@@ -32,22 +36,13 @@ class AdminMenuController extends Controller
          */
         if (request()->has('_users')) {
             $getUsers = $this->getUsers()->whereNotNull('email_verified_at');
-            $getUsersPag = $this->getUsers()->whereNotNull('email_verified_at')->paginate(10);
-            $getUsersPag->withPath(url('/api/admin/menu?_users=full'));
             if (request('_users') == 'countOnly') {
                 $data['users'] = strval($getUsers->count());
             } else {
-                $userToArray = $getUsersPag->toArray();
+                $getUsersPag = $this->setToPaginate($this->getUsers()->whereNotNull('email_verified_at'), 10, '?_users=full');
                 $data['users']['count'] = strval($getUsers->count());
                 $data['users']['list'] = $getUsersPag->getCollection()->map->userInfoListMap();
-                $data['users']['query'] = [
-                    'data_from' => $userToArray['from'],
-                    'data_to' => $userToArray['to'],
-                    'first_page' => $userToArray['first_page_url'],
-                    'prev_page' => $userToArray['prev_page_url'],
-                    'next_page' => $userToArray['next_page_url'],
-                    'last_page' => $userToArray['last_page_url']
-                ];
+                $data['users']['query'] = $this->getQueryLinkPaginatePage($getUsersPag->toArray());
             }
         }
         /**
@@ -58,8 +53,10 @@ class AdminMenuController extends Controller
             if (request('_unlistedUsers') == 'countOnly') {
                 $data['unlistedUsers'] = strval($getUnlistedUsers->count());
             } else {
+                $getUnlistedUsersPag = $this->setToPaginate($this->getUsers()->onlyTrashed(), 10, '?_unlistedUsers=full');
                 $data['unlistedUsers']['count'] = strval($getUnlistedUsers->count());
-                $data['unlistedUsers']['list'] = $getUnlistedUsers->get()->map->userInfoListMap();
+                $data['unlistedUsers']['list'] = $getUnlistedUsersPag->getCollection()->map->userInfoListMap();
+                $data['unlistedUsers']['query'] = $this->getQueryLinkPaginatePage($getUnlistedUsersPag->toArray());
             }
         }
         /**
@@ -70,8 +67,10 @@ class AdminMenuController extends Controller
             if (request('_newMembers') == 'countOnly') {
                 $data['newMembers'] = strval($getNewMembers->count());
             } else {
+                $getNewMembersPag = $this->setToPaginate($this->getUsers()->whereNull('email_verified_at'), 10, '?_newMembers=full');
                 $data['newMembers']['count'] = strval($getNewMembers->count());
-                $data['newMembers']['list'] = $getNewMembers->get()->map->userInfoListMap();
+                $data['newMembers']['list'] = $getNewMembersPag->getCollection()->map->userInfoListMap();
+                $data['newMembers']['query'] = $this->getQueryLinkPaginatePage($getNewMembersPag->toArray());
             }
         }
         /**
@@ -82,8 +81,23 @@ class AdminMenuController extends Controller
             if (request('_lostPasswords') == 'countOnly') {
                 $data['lostPassword'] = strval($getLostPassword->count());
             } else {
+                $getLostPasswordPag = $this->setToPaginate($this->getUserLostPassord(), 10, '?_lostPasswords=full');
                 $data['lostPassword']['count'] = strval($getLostPassword->count());
-                $data['lostPassword']['list'] = $getLostPassword->get()->map->getLostPasswordListMap();
+                $data['lostPassword']['list'] = $getLostPasswordPag->getCollection()->map->userInfoListMap();
+                $data['lostPassword']['query'] = $this->getQueryLinkPaginatePage($getLostPasswordPag->toArray());
+            }
+        }
+        /**
+         * get user by name
+         */
+        if (request()->has('_searchName')) {
+            if (request('_searchName')) {
+                $getUser = $this->getUserByName(request('_searchName'));
+                $getUserPag = $this->setToPaginate($this->getUserByName(request('_searchName')), 10, '?_searchName=' . request('_searchName'));
+                $data['users']['keyname'] = request('_searchName');
+                $data['users']['count'] = strval($getUser->count());
+                $data['users']['found'] = $getUserPag->getCollection()->map->userInfoListMap();
+                $data['users']['query'] = $this->getQueryLinkPaginatePage($getUserPag->toArray());
             }
         }
         /**
@@ -167,14 +181,17 @@ class AdminMenuController extends Controller
      */
     public function update($id)
     {
-        if (request()->has('_user')) {
+        
+        if (request()->has('_userSetStatus')) {
             $validator = Validator(request()->all(), [
-                '_user' => 'required|string|alpha_num',
+                '_userSetStatus' => 'required|string|alpha_num',
                 '_setNewActiveStatus' => 'required|string|alpha'
             ]);
             if ($validator->fails()) return response()->json(errorResponse($validator->errors()), 202);
             if (request()->has('_setNewActiveStatus')) {
-                $setNewActiveStatus = $this->getUser(request('_user'))->update(['active' => User_setActiveStatus(strtolower(request('_setNewActiveStatus')))]);
+                $getUser = $this->getUser(request('_userSetStatus'));
+                if ($getUser->count() && (User_getStatus($getUser->get()[0]->userstat->status) == 'admin')) return response()->json(errorResponse('Sorry, this user is protected by system'), 202);
+                $setNewActiveStatus = $getUser->update(['active' => User_setActiveStatus(strtolower(request('_setNewActiveStatus')))]);
                 if ($setNewActiveStatus) return response()->json(successResponse('Successfully update new active status to ' . request('_setNewActiveStatus')), 201);
                 else return response()->json(errorResponse('Failed to update new active status'), 202);
             }
@@ -224,17 +241,28 @@ class AdminMenuController extends Controller
     private function getUsers()
     {
         return User::query()
-        ->select('users.*')
-        ->join('user_biodatas', 'users.code', '=', 'user_biodatas.code')
-        ->orderBy('user_biodatas.name')
-        ->whereIn('users.code', function ($query) {
-            $query->select('code')->from('user_statuses')->where('status', User_setStatus('user'));
-        });
+            ->select('users.*')
+            ->join('user_biodatas', 'users.code', '=', 'user_biodatas.code')
+            ->orderBy('user_biodatas.name')
+            ->whereIn('users.code', function ($query) {
+                $query->select('code')->from('user_statuses')->where('status', User_setStatus('user'));
+            });
     }
 
+    /**
+     * get user by code
+     *
+     * @param string $userCode
+     * @return void
+     */
     private function getUser($userCode)
     {
         return User::with('userstat')->where('code', $userCode);
+    }
+
+    private function getUserByName($userName)
+    {
+        return $this->getUsers()->where('user_biodatas.name', 'like', "%$userName%");
     }
 
     /**
@@ -320,5 +348,37 @@ class AdminMenuController extends Controller
         } else {
             return response()->json(errorResponse('User not found'), 202);
         }
+    }
+
+    # protected method
+    /**
+     * paginate data
+     *
+     * @param array $bigData
+     * @param int $setLimit
+     * @param string $pageUrl
+     * @return void
+     */
+    protected function setToPaginate($bigData, $setLimit, $pageUrl)
+    {
+        return $bigData->paginate($setLimit)->withPath(url()->current() . $pageUrl);
+    }
+
+    /**
+     * get query page from paginated data
+     *
+     * @param array $queryData
+     * @return void
+     */
+    protected function getQueryLinkPaginatePage($queryData)
+    {
+        return [
+            'data_from' => $queryData['from'],
+            'data_to' => $queryData['to'],
+            'first_page' => $queryData['first_page_url'],
+            'prev_page' => $queryData['prev_page_url'],
+            'next_page' => $queryData['next_page_url'],
+            'last_page' => $queryData['last_page_url']
+        ];
     }
 }
