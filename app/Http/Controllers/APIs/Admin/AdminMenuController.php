@@ -92,11 +92,13 @@ class AdminMenuController extends Controller
          */
         if (request()->has('_searchName')) {
             if (request('_searchName')) {
-                $getUser = $this->getUserByName(request('_searchName'));
-                $getUserPag = $this->setToPaginate($this->getUserByName(request('_searchName')), 10, '?_searchName=' . request('_searchName'));
+                $userCount = request('_condition') == 'unlisted' ? $this->getUserByName(request('_searchName'))->onlyTrashed() : $this->getUserByName(request('_searchName'))->whereNotNull('email_verified_at');
+                $userLists = request('_condition') == 'unlisted' ? $this->getUserByName(request('_searchName'))->onlyTrashed() : $this->getUserByName(request('_searchName'))->whereNotNull('email_verified_at');
+                $userConds = request('_condition') == 'unlisted' ? '&_condition=unlisted' : '';
+                $getUserPag = $this->setToPaginate($userLists, 10, '?_searchName=' . request('_searchName') . $userConds);
                 $data['users']['keyname'] = request('_searchName');
-                $data['users']['count'] = strval($getUser->count());
-                $data['users']['found'] = $getUserPag->getCollection()->map->userInfoListMap();
+                $data['users']['count'] = strval($userCount->count());
+                $data['users']['list'] = $getUserPag->getCollection()->map->userInfoListMap();
                 $data['users']['query'] = $this->getQueryLinkPaginatePage($getUserPag->toArray());
             }
         }
@@ -181,7 +183,6 @@ class AdminMenuController extends Controller
      */
     public function update($id)
     {
-        
         if (request()->has('_userSetStatus')) {
             $validator = Validator(request()->all(), [
                 '_userSetStatus' => 'required|string|alpha_num',
