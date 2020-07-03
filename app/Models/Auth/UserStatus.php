@@ -11,6 +11,6 @@ class UserStatus extends Model
     #relation
     public function user()
     {
-        return $this->belongsTo('App\Models\Auth\User');
+        return $this->belongsTo(User::class);
     }
 }

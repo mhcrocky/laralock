@@ -43,6 +43,6 @@ class UserLoginHistory extends Model
     #relation
     public function user()
     {
-        return $this->belongsTo('App\Models\Auth\User', 'code', 'code')->withDefault(['info' => 'User not found']);
+        return $this->belongsTo(User::class, 'code', 'code');
     }
 }

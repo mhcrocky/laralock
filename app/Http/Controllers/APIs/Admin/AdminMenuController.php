@@ -241,13 +241,15 @@ class AdminMenuController extends Controller
      */
     private function getUsers()
     {
-        return User::query()
-            ->select('users.*')
-            ->join('user_biodatas', 'users.code', '=', 'user_biodatas.code')
-            ->orderBy('user_biodatas.name')
-            ->whereIn('users.code', function ($query) {
-                $query->select('code')->from('user_statuses')->where('status', User_setStatus('user'));
-            });
+        // return User::join('user_biodatas', 'users.code', '=', 'user_biodatas.code')
+        //     ->orderBy('user_biodatas.name')
+        //     ->whereHas('userstat', function ($query) {
+        //         return $query->where('status', User_setStatus('user'));
+        //     });
+
+        return User::select('users.*')
+            ->join('user_statuses', 'users.code', '=', 'user_statuses.code')
+            ->where('user_statuses.status', User_setStatus('user'));
     }
 
     /**
@@ -263,7 +265,10 @@ class AdminMenuController extends Controller
 
     private function getUserByName($userName)
     {
-        return $this->getUsers()->where('user_biodatas.name', 'like', "%$userName%");
+        return $this->getUsers()
+            ->join('user_biodatas', 'users.code', '=', 'user_biodatas.code')
+            ->where('user_biodatas.name', 'like', "%$userName%")
+            ->orderBy('user_biodatas.name');
     }
 
     /**

@@ -19,4 +19,10 @@ class UserProfileImageHistory extends Model
             'image_uploaded_at' => Carbon_HumanDateTime($this->created_at)
         ];
     }
+
+    #relation
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'code', 'code');
+    }
 }
