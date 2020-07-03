@@ -83,6 +83,19 @@ function User_isActive($code)
 }
 
 /**
+ * get user email verified condition
+ * true or false
+ *
+ * @param string $code
+ * @return void
+ */
+function User_isVerified($code)
+{
+    $user = User::where('code', $code)->first('email_verified_at');
+    return $user && isset($user['email_verified_at']) ? true : false;
+}
+
+/**
  * get user name by code
  *
  * @param string $code

@@ -5,18 +5,16 @@ namespace App\Http\Controllers\APIs\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Auth\User; // ! ['email', 'password', 'code', 'active']
-use App\Models\Auth\UserBiodata; // ! ['code', 'name', 'profile_img']
-use App\Models\Auth\UserStatus; // ! ['code', 'status']
 use App\Models\Access\RegisterMember; // ! ['user_access', 'user_code']
 
 class RegisterController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:sanctum', ['except' => ['register', 'register_verify']]);
-    }
-
+    /**
+     * create new user
+     * send email to new user
+     *
+     * @return void
+     */
     public function register()
     {
         $validator = Validator(request()->all(), [
@@ -33,7 +31,6 @@ class RegisterController extends Controller
         if ($validator->fails()) {
             return response()->json(errorResponse($validator->errors()), 202);
         }
-        // return response()->json(successResponse(request()->all()), 200);
         try {
             DB::transaction(function () {
                 $newCode = User_createNewCode();
@@ -54,6 +51,11 @@ class RegisterController extends Controller
         }
     }
 
+    /**
+     * verifying email from new user
+     *
+     * @return void
+     */
     public function register_verify()
     {
         $validator = Validator(request()->all(), [

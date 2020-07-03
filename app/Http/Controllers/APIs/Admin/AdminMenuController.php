@@ -134,16 +134,6 @@ class AdminMenuController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @return \Illuminate\Http\Response
@@ -160,17 +150,6 @@ class AdminMenuController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
     {
         //
     }
@@ -247,9 +226,7 @@ class AdminMenuController extends Controller
         //         return $query->where('status', User_setStatus('user'));
         //     });
 
-        return User::select('users.*')
-            ->join('user_statuses', 'users.code', '=', 'user_statuses.code')
-            ->where('user_statuses.status', User_setStatus('user'));
+        return User::getUserOnly();
     }
 
     /**

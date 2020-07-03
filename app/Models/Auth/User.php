@@ -91,6 +91,12 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    # scope
+    public function scopeGetUserOnly($query)
+    {
+        $query->select('users.*')->join('user_statuses', 'users.code', '=', 'user_statuses.code')->where('status', User_setStatus('user'));
+    }
+
     # relation
     public function userbio()
     {

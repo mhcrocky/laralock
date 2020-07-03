@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
  * jwt auth default route
  * access : /api/auth/---
  */
-Route::group([/*'middleware' => 'api', */'prefix' => 'auth'], function () {
+Route::group(['prefix' => 'auth'], function () {
     Route::post('/login', 'APIs\Auth\AuthController@login');
     Route::post('/logout', 'APIs\Auth\AuthController@logout');
     Route::post('/refresh', 'APIs\Auth\AuthController@refresh');
@@ -36,7 +36,7 @@ Route::group([/*'middleware' => 'api', */'prefix' => 'auth'], function () {
  * for verify and recover password
  * access : /api/access/---
  */
-Route::group([/*'middleware' => 'api', */'prefix' => 'access'], function () {
+Route::group(['prefix' => 'access'], function () {
     Route::post('/register/verify', 'APIs\Auth\RegisterController@register_verify');
 });
 
@@ -46,10 +46,10 @@ Route::group([/*'middleware' => 'api', */'prefix' => 'access'], function () {
  * access : /api/user/---
  */
 Route::group(['middleware' => ['auth:sanctum', 'verified'], 'prefix' => 'user'], function () {
-    Route::resource('/me', 'APIs\UserTestController')->except(['create', 'edit']); // testing purpose
-    Route::resource('/profile', 'APIs\User\UserProfileController')->except(['create', 'edit']);
-    Route::resource('/history/login', 'APIs\User\UserLoginHistController')->except(['create', 'edit']);
-    Route::resource('/profile/image/history', 'APIs\User\UserProfileImageHistController')->except(['create', 'edit']);
+    Route::resource('/me', 'APIs\UserTestController'); // testing purpose
+    Route::resource('/profile', 'APIs\User\UserProfileController');
+    Route::resource('/history/login', 'APIs\User\UserLoginHistController');
+    Route::resource('/profile/image/history', 'APIs\User\UserProfileImageHistController');
 });
 
 /**
@@ -57,5 +57,5 @@ Route::group(['middleware' => ['auth:sanctum', 'verified'], 'prefix' => 'user'],
  * access : /api/admin/---
  */
 Route::group(['middleware' => ['auth:sanctum', 'verified', 'checkrole:admin'], 'prefix' => 'admin'], function () {
-    Route::resource('/menu', 'APIs\Admin\AdminMenuController')->except(['create', 'edit']);
+    Route::resource('/menu', 'APIs\Admin\AdminMenuController');
 });

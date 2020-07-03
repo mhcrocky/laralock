@@ -34,8 +34,8 @@ class AuthController extends Controller
         if (!$token) {
             return response()->json(errorResponse('Account not found !'), 202);
         }
-        if (Auth::user()->email_verified_at) {
-            if (Auth::user()->active == User_setActiveStatus('active')) {
+        if (User_isVerified(Auth::user()->code)) {
+            if (User_isActive(Auth::user()->code)) {
                 UserLoginHistory::create(['code' => Auth::user()->code, 'log_code' => randString(20), 'ipaddr' => getClientIpAddress(), 'info' => request('devdata')]);
                 return $this->respondWithToken(Auth::user()->createToken(request('device') ? (request('device') . "-" . getClientIpAddress()) : ("_jwtApiToken-" . getClientIpAddress()))->plainTextToken);
             }
