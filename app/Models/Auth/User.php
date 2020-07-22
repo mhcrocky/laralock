@@ -92,9 +92,20 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     # scope
-    public function scopeGetUserOnly($query)
+    public function scopeGetUserOnly($query, $arrCode = [])
     {
-        $query->select('users.*')->join('user_statuses', 'users.code', '=', 'user_statuses.code')->where('status', User_setStatus('user'));
+        // this query results are faster but unsorted
+        // $query->select('users.*')->join('user_statuses', 'users.code', '=', 'user_statuses.code');
+        // if (count($arrCode)) $query->whereIn('users.code', $arrCode);
+        // $query->where('status', User_setStatus('user'));
+
+        // this query results are sorted but slower
+        $query->join('user_biodatas', 'users.code', '=', 'user_biodatas.code');
+        $query->whereIn('users.code', function ($q) {
+            $q->select('code')->from('user_statuses')->where('status', User_setStatus('user'));
+        });
+        if (count($arrCode)) $query->whereIn('users.code', $arrCode);
+        $query->orderBy('name');
     }
 
     # relation

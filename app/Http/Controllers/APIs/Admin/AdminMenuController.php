@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\APIs\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Arr;
 use App\Models\Access\ForgetPassword;
 use App\Models\Auth\User;
+use App\Models\Auth\UserBiodata;
 use App\Models\Auth\UserLoginHistory;
 
 class AdminMenuController extends Controller
@@ -204,6 +206,12 @@ class AdminMenuController extends Controller
      */
     public function destroy($id)
     {
+        $validator = Validator(request()->all(), [
+            '_userDelete' => 'string|alpha_num',
+            '_method' => 'string|nullable|alpha',
+            '_lostPasswdRequest' => 'string|alpha_num'
+        ]);
+        if ($validator->fails()) return response()->json(errorResponse($validator->errors()), 202);
         if (request()->has('_userDelete') && request()->has('_method')) {
             return $this->deleteUser(request('_userDelete'), request('_method'));
         }
@@ -218,7 +226,7 @@ class AdminMenuController extends Controller
      *
      * @return void
      */
-    private function getUsers()
+    private function getUsers($param = [])
     {
         // return User::join('user_biodatas', 'users.code', '=', 'user_biodatas.code')
         //     ->orderBy('user_biodatas.name')
@@ -226,7 +234,7 @@ class AdminMenuController extends Controller
         //         return $query->where('status', User_setStatus('user'));
         //     });
 
-        return User::getUserOnly();
+        return User::getUserOnly($param);
     }
 
     /**
@@ -242,10 +250,8 @@ class AdminMenuController extends Controller
 
     private function getUserByName($userName)
     {
-        return $this->getUsers()
-            ->join('user_biodatas', 'users.code', '=', 'user_biodatas.code')
-            ->where('user_biodatas.name', 'like', "%$userName%")
-            ->orderBy('user_biodatas.name');
+        $getUserCode = Arr::pluck(UserBiodata::where('name', 'like', "%$userName%")->get(), 'code');
+        return $this->getUsers(count($getUserCode) ? $getUserCode : ['abort']);
     }
 
     /**
@@ -287,7 +293,7 @@ class AdminMenuController extends Controller
         ]);
         if ($validator->fails()) return response()->json(errorResponse('Some inputs not correct'), 202);
         $userIdentity = $this->getUser($userCode);
-        $delMethod == 'force' ? $userIdentity->withTrashed() : '';
+        if ($delMethod == 'force') $userIdentity->withTrashed();
         if ($userIdentity->count() && (User_getStatus($userIdentity->get()[0]->userstat->status) != 'admin')) {
             // anyway, who wants to kill admin :)
             $userInfo = $userIdentity->get()->map->userProfileMap()[0];
