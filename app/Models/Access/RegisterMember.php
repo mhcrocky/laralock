@@ -11,6 +11,6 @@ class RegisterMember extends Model
     #relation
     public function user()
     {
-        return $this->belongsTo('App\Models\Auth\User', 'user_code', 'code')->withDefault(['info' => 'User not found']);
+        return $this->belongsTo(\App\Models\Auth\User::class, 'user_code', 'code')->withDefault(['info' => 'User not found']);
     }
 }

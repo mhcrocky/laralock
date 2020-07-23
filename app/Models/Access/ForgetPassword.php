@@ -39,6 +39,6 @@ class ForgetPassword extends Model
     #relation
     public function user()
     {
-        return $this->belongsTo('App\Models\Auth\User', 'user_email', 'email')->withDefault(['info' => 'User not found']);
+        return $this->belongsTo(\App\Models\Auth\User::class, 'user_email', 'email')->withDefault(['info' => 'User not found']);
     }
 }

@@ -85,7 +85,7 @@ class AdminMenuController extends Controller
             } else {
                 $getLostPasswordPag = $this->setToPaginate($this->getUserLostPassord(), 10, '?_lostPasswords=full');
                 $data['lostPassword']['count'] = strval($getLostPassword->count());
-                $data['lostPassword']['list'] = $getLostPasswordPag->getCollection()->map->userInfoListMap();
+                $data['lostPassword']['list'] = $getLostPasswordPag->getCollection()->map->getLostPasswordListMap();
                 $data['lostPassword']['query'] = $this->getQueryLinkPaginatePage($getLostPasswordPag->toArray());
             }
         }
@@ -94,13 +94,28 @@ class AdminMenuController extends Controller
          */
         if (request()->has('_searchName')) {
             if (request('_searchName')) {
-                $userCount = request('_condition') == 'unlisted' ? $this->getUserByName(request('_searchName'))->onlyTrashed() : $this->getUserByName(request('_searchName'))->whereNotNull('email_verified_at');
-                $userLists = request('_condition') == 'unlisted' ? $this->getUserByName(request('_searchName'))->onlyTrashed() : $this->getUserByName(request('_searchName'))->whereNotNull('email_verified_at');
-                $userConds = request('_condition') == 'unlisted' ? '&_condition=unlisted' : '';
-                $getUserPag = $this->setToPaginate($userLists, 10, '?_searchName=' . request('_searchName') . $userConds);
+                $getUsersName = $this->getUserByName(request('_searchName'));
+                $setUserConds = '';
+                if (request('_condition') == 'unlisted') {
+                    $getUsersName->onlyTrashed();
+                    $setUserConds = '&_condition=unlisted';
+                } elseif (request('_condition') == 'newmember') {
+                    $getUsersName->whereNull('email_verified_at');
+                    $setUserConds = '&_condition=newmember';
+                } elseif (request('_condition') == 'lostpassword') {
+                    $getCode = Arr::pluck(UserBiodata::where('name', 'like', '%' . request('_searchName') . '%')->get(), 'code');
+                    $getMail = Arr::pluck(User::whereIn('code', $getCode)->get(), 'email');
+                    $getUsersName = $this->getUserLostPassord()->whereIn('user_email', $getMail);
+                    $setUserConds = '&_condition=lostpassword';
+                } else {
+                    $getUsersName->whereNotNull('email_verified_at');
+                }
+                $getUsersCount = $getUsersName->count();
+                $getUserPag = $this->setToPaginate($getUsersName, 10, '?_searchName=' . request('_searchName') . $setUserConds);
+                $storeData = request('_condition') == 'lostpassword' ? $getUserPag->getCollection()->map->getLostPasswordListMap() : $getUserPag->getCollection()->map->userInfoListMap();
                 $data['users']['keyname'] = request('_searchName');
-                $data['users']['count'] = strval($userCount->count());
-                $data['users']['list'] = $getUserPag->getCollection()->map->userInfoListMap();
+                $data['users']['count'] = strval($getUsersCount);
+                $data['users']['list'] = $storeData;
                 $data['users']['query'] = $this->getQueryLinkPaginatePage($getUserPag->toArray());
             }
         }

@@ -111,31 +111,31 @@ class User extends Authenticatable implements MustVerifyEmail
     # relation
     public function userbio()
     {
-        return $this->hasOne(UserBiodata::class, 'code', 'code')->withDefault(['info' => 'User not found']);
+        return $this->hasOne(\App\Models\Auth\UserBiodata::class, 'code', 'code')->withDefault(['info' => 'User not found']);
     }
 
     public function userstat()
     {
-        return $this->hasOne(UserStatus::class, 'code', 'code')->withDefault(['info' => 'User not found']);
+        return $this->hasOne(\App\Models\Auth\UserStatus::class, 'code', 'code')->withDefault(['info' => 'User not found']);
     }
 
     public function registermember()
     {
-        return $this->hasOne(RegisterMember::class, 'user_code', 'code')->withDefault(['info' => 'User not found']);
+        return $this->hasOne(\App\Models\Access\RegisterMember::class, 'user_code', 'code')->withDefault(['info' => 'User not found']);
     }
 
     public function userhistory()
     {
-        return $this->hasMany(UserLoginHistory::class, 'code', 'code');
+        return $this->hasMany(\App\Models\Auth\UserLoginHistory::class, 'code', 'code');
     }
 
     public function lostpassword()
     {
-        return $this->hasMany(ForgetPassword::class, 'user_email', 'email');
+        return $this->hasMany(\App\Models\Access\ForgetPassword::class, 'user_email', 'email');
     }
 
     public function userimghistory()
     {
-        return $this->hasMany(UserProfileImageHistory::class, 'code', 'code')->withDefault(['info' => 'User have no profile history']);
+        return $this->hasMany(\App\Models\Auth\UserProfileImageHistory::class, 'code', 'code')->withDefault(['info' => 'User have no profile history']);
     }
 }
