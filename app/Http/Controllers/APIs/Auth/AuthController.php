@@ -77,7 +77,7 @@ class AuthController extends Controller
         }
         $getAccount = User::where('email', request('email'))->first();
         if ($getAccount) {
-            sendAccessLostPassword(request('email'));
+            Mail_sendAccessLostPassword(request('email'));
             return response()->json(successResponse('Request has been sent, please check your email!'), 200);
         }
         return response()->json(errorResponse('Account not found!'), 202);

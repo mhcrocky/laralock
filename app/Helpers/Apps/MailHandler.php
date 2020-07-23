@@ -48,15 +48,47 @@ function Mail_sendRegisterVerification($mailto, $usercode)
 }
 
 /**
+ * preview mail for verify new register user
+ *
+ * @param string $access_key
+ * @return void
+ */
+function Mail_viewRegisterVerification($access_key)
+{
+    $getRequest = RegisterMember::where('user_access', $access_key);
+    if ($getRequest->count()) {
+        $url = env('SANCTUM_STATEFUL_DOMAINS') . "#/register/verify/{$access_key}";
+        return (new RegisterMail)->markdown('emails.access.registermail', ['url' => $url]);
+    }
+    return _throwErrorResponse();
+}
+
+/**
  * send email for access recover password
  *
  * @param string $mailto
  * @return void
  */
-function sendAccessLostPassword($mailto)
+function Mail_sendAccessLostPassword($mailto)
 {
     $access_key = Mail_createNewAccessToken();
     $url = env('SANCTUM_STATEFUL_DOMAINS') . "#/lost-password/recover/{$access_key}";
     ForgetPassword::create(['user_access' => $access_key, 'user_email' => $mailto]);
     Mail::to($mailto)->send((new RecoverPasswordMail)->subject(env('APP_NAME') . ' Password Recovery')->markdown('emails.access.recoverpasswordmail', ['url' => $url]));
+}
+
+/**
+ * preview email for access recover password
+ *
+ * @param string $access_key
+ * @return void
+ */
+function Mail_viewAccessLostPassword($access_key)
+{
+    $getRequest = ForgetPassword::where('user_access', $access_key);
+    if ($getRequest->count()) {
+        $url = env('SANCTUM_STATEFUL_DOMAINS') . "#/lost-password/recover/{$access_key}";
+        return (new RecoverPasswordMail)->markdown('emails.access.recoverpasswordmail', ['url' => $url]);
+    }
+    return _throwErrorResponse();
 }

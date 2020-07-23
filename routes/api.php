@@ -58,4 +58,10 @@ Route::group(['middleware' => ['auth:sanctum', 'verified'], 'prefix' => 'user'],
  */
 Route::group(['middleware' => ['auth:sanctum', 'verified', 'checkrole:admin'], 'prefix' => 'admin'], function () {
     Route::resource('/menu', 'APIs\Admin\AdminMenuController');
+    Route::get('/new-register/{access}/preview', function ($access) {
+        return Mail_viewRegisterVerification($access);
+    });
+    Route::get('/lost-password/{access}/preview', function ($access) {
+        return Mail_viewAccessLostPassword($access);
+    });
 });
