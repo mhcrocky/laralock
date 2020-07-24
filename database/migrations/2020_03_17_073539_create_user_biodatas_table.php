@@ -16,7 +16,7 @@ class CreateUserBiodatasTable extends Migration
         Schema::create('user_biodatas', function (Blueprint $table) {
             $table->id();
             $table->string('code');
-            $table->string('name')->index();
+            $table->string('name');
             $table->string('profile_img')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();

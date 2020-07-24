@@ -95,17 +95,23 @@ class User extends Authenticatable implements MustVerifyEmail
     public function scopeGetUserOnly($query, $arrCode = [])
     {
         // this query results are faster but unsorted
-        // $query->select('users.*')->join('user_statuses', 'users.code', '=', 'user_statuses.code');
+        $query->select('users.*')->join('user_statuses', 'users.code', '=', 'user_statuses.code');
+        if (count($arrCode)) $query->whereIn('users.code', $arrCode);
+        $query->where('status', User_setStatus('user'));
+
+        // this query are results same from above but slower, this using subquery
+        // $query->whereIn('code', function ($q) {
+        //     $q->select('code')->from('user_statuses')->where('status', User_setStatus('user'));
+        // });
         // if (count($arrCode)) $query->whereIn('users.code', $arrCode);
-        // $query->where('status', User_setStatus('user'));
 
         // this query results are sorted but slower
-        $query->join('user_biodatas', 'users.code', '=', 'user_biodatas.code');
-        $query->whereIn('users.code', function ($q) {
-            $q->select('code')->from('user_statuses')->where('status', User_setStatus('user'));
-        });
-        if (count($arrCode)) $query->whereIn('users.code', $arrCode);
-        $query->orderBy('name');
+        // $query->join('user_biodatas', 'users.code', '=', 'user_biodatas.code');
+        // $query->whereIn('users.code', function ($q) {
+        //     $q->select('code')->from('user_statuses')->where('status', User_setStatus('user'));
+        // });
+        // if (count($arrCode)) $query->whereIn('users.code', $arrCode);
+        // $query->orderBy('name');
     }
 
     # relation

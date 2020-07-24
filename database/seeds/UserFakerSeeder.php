@@ -6,7 +6,6 @@ use App\Models\Auth\User;
 use App\Models\Auth\UserBiodata;
 use App\Models\Auth\UserStatus;
 
-
 class UserFakerSeeder extends Seeder
 {
     /**
@@ -23,7 +22,7 @@ class UserFakerSeeder extends Seeder
             $moreUser = [
                 'code' => User_createNewCode(),
                 'name' => $faker->name,
-                'email' => $faker->unique()->safeEmail,
+                'email' => strtolower(randArray(Seed_getDummyName())) . strtolower(randString(6)) . $faker->unique()->safeEmail,
                 'password' => '$2y$10$0F3q8CDeDiEhqGlfxWmGPeqLLA7f5AsIgV.MZ6NoouGKaUzV0ZaXq', // @UserTest10
                 'active' => User_setActiveStatus('active'),
                 'status' => User_setStatus('user'),
@@ -46,13 +45,13 @@ class UserFakerSeeder extends Seeder
                 'status' => $moreUser['status']
             ];
         }
-        foreach (array_chunk($newUser, 5000) as $setUser) {
+        foreach (array_chunk($newUser, 10000) as $setUser) {
             User::insert($setUser);
         }
-        foreach (array_chunk($newUserBiodata, 5000) as $setUserBiodata) {
+        foreach (array_chunk($newUserBiodata, 10000) as $setUserBiodata) {
             UserBiodata::insert($setUserBiodata);
         }
-        foreach (array_chunk($newUserStatus, 5000) as $setUserStatus) {
+        foreach (array_chunk($newUserStatus, 10000) as $setUserStatus) {
             UserStatus::insert($setUserStatus);
         }
     }
